@@ -865,10 +865,5 @@ data$Combined = as.character("")
 
 data$Date <- as.Date(data$Date)
 
-# Convert to data.table and optimize for faster access
-library(data.table)
-setDT(data)  # Convert to data.table in place
-setkey(data, Date, NAICS_Code, Indicator)  # Set keys for faster filtering/joining
-
 # Original .RData format for existing code
 save(data, file = "data_index.RData")
