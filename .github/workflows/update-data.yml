@@ -25,8 +25,8 @@ jobs:
       
       - name: Install R dependencies
         run: |
-          install.packages(c("readxl", "dplyr", "tidyverse", "readr", "rsconnect", 
-                             "httr", "stringr", "lubridate", "jsonlite", "data.table"))
+          install.packages(c("readxl", "dplyr", "readr", 
+                             "httr", "stringr", "lubridate", "jsonlite"))
         shell: Rscript {0}
       
       - name: Run data update script
