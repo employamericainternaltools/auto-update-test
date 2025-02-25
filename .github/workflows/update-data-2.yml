@@ -25,7 +25,7 @@ jobs:
       
       - name: Install R dependencies
         run: |
-          install.packages(c("readxl", "dplyr", "readr",
+          install.packages(c("readxl", "dplyr", "readr", "tidyr",
                              "httr", "stringr", "lubridate", "jsonlite"))
         shell: Rscript {0}
       
