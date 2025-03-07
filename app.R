@@ -1,5 +1,3 @@
-#axis handling https://claude.ai/chat/7cf2082f-47be-4243-82b3-256a688dd380 
-
 # Load necessary libraries
 rm(list = ls())
 library(shiny)
@@ -383,6 +381,7 @@ ui <- fluidPage(
                                    )
                                  )
                           ),
+                          # Add this inside the Layout section of the Visualize tab
                           column(4,
                                  wellPanel(
                                    class = "control-box",
@@ -390,7 +389,9 @@ ui <- fluidPage(
                                    fluidRow(
                                      column(6, numericInput("xLabelFreq", "X-axis Label Frequency (years):", value = 3)),
                                      column(6, numericInput("storedXLabelFreq", "X-axis Label Frequency (years):", value = 3))
-                                   )
+                                   ),
+                                   # Add this new checkbox
+                                   checkboxInput("alignZeros", "Align zero lines on dual axes", value = TRUE)
                                  )
                           ),
                           column(4,
@@ -437,6 +438,7 @@ server <- function(input, output, session) {
   )
   
   # Create a reactive value to store the stored data
+  # Update this block
   storedData <- reactiveVal(data.frame(Date = as.Date(character()), 
                                        NAICS_Code = character(),
                                        NAICS_Name = character(),
@@ -445,7 +447,8 @@ server <- function(input, output, session) {
                                        index_col = character(),
                                        Transform_Name = character(),
                                        Combined = character(),
-                                       Axis_Type = character()))
+                                       Axis_Type = character(),
+                                       Units = character()))  # Add Units here
   
   
   # Reactive expression to extract the first three characters of the selected NAICS Constraint
@@ -582,16 +585,16 @@ server <- function(input, output, session) {
   transformName <- reactive({
     transforms <- c()
     if (input$useMovingAverage == TRUE) {
-      transforms <- c(transforms, paste("Moving Average (", input$movingAveragePeriod, " months)", sep = ""))
+      transforms <- c(transforms, paste0(input$movingAveragePeriod, "MMA"))
     }
     if (input$usePercentChange == TRUE) {
-      transforms <- c(transforms, paste("Percent Change (", input$percentChangePeriod, " months)", sep = ""))
+      transforms <- c(transforms, paste0(input$percentChangePeriod, "m % Change"))
     }
     if (input$useCompoundAnnualGrowthRate == TRUE) {
-      transforms <- c(transforms, paste("Compound Annual Growth Rate (", input$compoundAnnualGrowthRatePeriod, " months)", sep = ""))
+      transforms <- c(transforms, paste0(input$compoundAnnualGrowthRatePeriod, "m CAGR"))
     }
     if (input$useChange == TRUE) {
-      transforms <- c(transforms, paste("Change (", input$changePeriod, " months)", sep = ""))
+      transforms <- c(transforms, paste0(input$changePeriod, "m Change"))
     }
     if (length(transforms) == 0) {
       transforms <- ""
@@ -645,14 +648,21 @@ server <- function(input, output, session) {
       group_by(Indicator, index_col) %>%
       arrange(Date, .by_group = TRUE)
     
+    # Store original Units for each series before any transformations
+    original_units <- filtered %>%
+      select(Indicator, index_col, Units) %>%
+      distinct()
+    
     # Apply indexing if useIndexDate is TRUE
     if (input$useIndexDate) {
       index_date <- paste(month.name[as.integer(format(indexDate(), "%m"))], 
                           format(indexDate(), "%Y"))
+      index_format <- format(indexDate(), "%m-%Y")
       filtered <- filtered %>%
         group_by(Indicator, index_col) %>%
         mutate(Value = Value / Value[Date == indexDate()][1] * 100,
-               Transform_Name = paste("Indexed to", index_date)) %>%
+               Transform_Name = paste0("Index, [", index_format, "] = 100"),
+               Units = paste0("Index, ", index_format, " = 100")) %>%  # Better format for indexed values
         ungroup()
     } else {
       filtered <- filtered %>%
@@ -689,9 +699,9 @@ server <- function(input, output, session) {
             # Extract seasonally adjusted series and update values
             result_df$Value <- as.numeric(final(seas_adj))
             result_df$Transform_Name <- if(result_df$Transform_Name[1] == "") {
-              "X-13 Seasonally Adjusted"
+              "SA"  # Use abbreviated form from table
             } else {
-              paste(result_df$Transform_Name, "X-13 Seasonally Adjusted", sep = ", ")
+              paste(result_df$Transform_Name, "SA", sep = ", ")
             }
             
           }, error = function(e) {
@@ -704,36 +714,61 @@ server <- function(input, output, session) {
     }
     
     # Apply other transforms in the specified order
+    # Apply other transforms in the specified order
     transforms <- transformName()
     for (transform in transforms) {
-      if (grepl("Moving Average", transform)) {
+      if (grepl("MMA$", transform)) {
+        # Extract the period from the transform name (e.g., "12MMA" -> 12)
+        period <- as.numeric(gsub("([0-9]+)MMA$", "\\1", transform))
         filtered <- filtered %>%
           group_by(Indicator, index_col) %>%
           arrange(Date, .by_group = TRUE) %>%
-          mutate(Value = dplyr::lag(zoo::rollmean(Value, k = input$movingAveragePeriod, 
+          mutate(Value = dplyr::lag(zoo::rollmean(Value, k = period, 
                                                   fill = NA, align = "right"), 
-                                    input$movingAveragePeriod - 1),
-                 Transform_Name = paste(Transform_Name, transform, sep = ", "))
-      } else if (grepl("Percent Change", transform)) {
+                                    period - 1),
+                 Transform_Name = ifelse(Transform_Name == "",
+                                         transform,
+                                         paste(Transform_Name, transform, sep = ", ")))
+      } else if (grepl("% Change$", transform)) {
+        # Extract the period from the transform name (e.g., "12m % Change" -> 12)
+        period <- as.numeric(gsub("([0-9]+)m % Change$", "\\1", transform))
         filtered <- filtered %>%
           group_by(Indicator, index_col) %>%
           arrange(Date, .by_group = TRUE) %>%
-          mutate(Value = (Value - lag(Value, n = input$percentChangePeriod)) / 
-                   lag(Value, n = input$percentChangePeriod),
-                 Transform_Name = paste(Transform_Name, transform, sep = ", "))
-      } else if (grepl("Compound Annual Growth Rate", transform)) {
+          mutate(Value = (Value - lag(Value, n = period)) / 
+                   lag(Value, n = period),
+                 Transform_Name = ifelse(Transform_Name == "",
+                                         transform,
+                                         paste(Transform_Name, transform, sep = ", ")),
+                 Units = "Percent",  # Override units for percent change
+                 Axis_Type = "Percentage") %>%
+          ungroup()
+      } else if (grepl("CAGR$", transform)) {
+        # Extract the period from the transform name (e.g., "12m CAGR" -> 12)
+        period <- as.numeric(gsub("([0-9]+)m CAGR$", "\\1", transform))
         filtered <- filtered %>%
           group_by(Indicator, index_col) %>%
           arrange(Date, .by_group = TRUE) %>%
-          mutate(Value = ((Value / lag(Value, n = input$compoundAnnualGrowthRatePeriod)) ^ 
-                            (1 / (input$compoundAnnualGrowthRatePeriod / 12)) - 1),
-                 Transform_Name = paste(Transform_Name, transform, sep = ", "))
-      } else if (grepl("Change", transform)) {
+          mutate(Value = ((Value / lag(Value, n = period)) ^ 
+                            (1 / (period / 12)) - 1),
+                 Transform_Name = ifelse(Transform_Name == "",
+                                         transform,
+                                         paste(Transform_Name, transform, sep = ", ")),
+                 Units = "Percent",  # Override units for CAGR
+                 Axis_Type = "Percentage") %>%
+          ungroup()
+      } else if (grepl("m Change$", transform) && !grepl("% Change$", transform)) {
+        # Extract the period from the transform name (e.g., "12m Change" -> 12)
+        period <- as.numeric(gsub("([0-9]+)m Change$", "\\1", transform))
         filtered <- filtered %>%
           group_by(Indicator, index_col) %>%
           arrange(Date, .by_group = TRUE) %>%
-          mutate(Value = Value - lag(Value, n = input$changePeriod),
-                 Transform_Name = paste(Transform_Name, transform, sep = ", "))
+          mutate(Value = Value - lag(Value, n = period),
+                 Transform_Name = ifelse(Transform_Name == "",
+                                         transform,
+                                         paste(Transform_Name, transform, sep = ", "))) %>%
+          # Keep original units for Change (absolute difference maintains units)
+          ungroup()
       }
     }
     
@@ -744,7 +779,7 @@ server <- function(input, output, session) {
       arrange(Date, Indicator, index_col)
     
     filtered
-  })
+  })  
   
   #  Update radio buttons based on user selection
   observeEvent(input$usePercentChange, {
@@ -765,7 +800,7 @@ server <- function(input, output, session) {
     p <- plot_ly(filteredData(), x = ~Date,
                  hovertemplate = paste(
                    "<b>%{text}</b><br>",
-                   "<span style='color:%{line.color}'></span> Value: %{y:.2f}",
+                   "<span style='color:%{line.color}'></span> Value: %{y:.2f} ", filteredData()$Units,  # Add units to hover
                    "<extra></extra>"
                  ),
                  text = ~index_col) %>%
@@ -777,6 +812,20 @@ server <- function(input, output, session) {
         ),
         hovermode = "x unified"
       )
+    
+    # Get unique Units for y-axis title
+    y_axis_title <- if (nrow(filteredData()) > 0) {
+      unique_units <- unique(filteredData()$Units)
+      if (length(unique_units) == 1) {
+        unique_units[1]  # If only one unit type, use it directly
+      } else if (length(unique_units) > 1) {
+        paste(unique_units, collapse = ", ")  # Multiple units, join with commas
+      } else {
+        "Value"  # Fallback if no units found
+      }
+    } else {
+      "Value"  # Default if no data
+    }
     
     # Handle recession shading
     recession_shapes <- list()
@@ -821,12 +870,27 @@ server <- function(input, output, session) {
       series_data <- filteredData() %>% 
         filter(paste(Indicator, Transform_Name, index_col, sep = " - ") == series)
       
+      # Create a sentence format for the legend
+      legend_text <- paste0(
+        series_data$Indicator[1], " for NAICS ", series_data$NAICS_Code[1], ": ", 
+        series_data$NAICS_Name[1], 
+        ifelse(series_data$Transform_Name[1] != "", paste0(", ", series_data$Transform_Name[1]), "")
+      )
+      
+      # Get units for this series
+      series_units <- series_data$Units[1]
+      
       p <- p %>% add_lines(
         y = ~Value,
         data = series_data,
-        name = series,
+        name = legend_text,  # Use new formatted legend text
         line = list(width = 1),
-        hoverinfo = "none",
+        hovertemplate = paste0(
+          "<b>%{text}</b><br>",
+          "<span style='color:%{line.color}'></span> Value: %{y:.2f} ", series_units,
+          "<extra></extra>"
+        ),
+        text = ~index_col,
         showlegend = TRUE
       )
     }
@@ -865,7 +929,7 @@ server <- function(input, output, session) {
         linewidth = 1,
         linecolor = 'black',
         mirror = FALSE,
-        title = "Value", 
+        title = y_axis_title,  # Using the dynamic units-based title
         tickfont = list(size = 12),
         fixedrange = FALSE,
         autorange = TRUE,
@@ -897,8 +961,7 @@ server <- function(input, output, session) {
       plot_bgcolor = "rgba(255, 255, 255, 0.9)",
       paper_bgcolor = "rgba(255, 255, 255, 0.9)"
     )
-  })
-  
+  })  
   # Reactive expression for the chart title
   chartTitle <- reactive({
     if(input$finishedVisualizationTitle == "") {
@@ -910,24 +973,10 @@ server <- function(input, output, session) {
   
   # Modify the existing storedLineChart output
   # Render the plotly visualization for stored data with custom colors
-  # Render the plotly visualization for stored data with custom colors
-  # Render the plotly visualization for stored data with custom colors
-  # Render the plotly visualization for stored data with custom colors
-  # Render the plotly visualization for stored data with custom colors
   output$storedLineChart <- renderPlotly({
     # Initialize the base plot with proper hover label formatting
     p <- plot_ly(storedData(), x = ~Date) %>%
       layout(
-        # Configure right-side y-axis
-        yaxis2 = list(
-          overlaying = "y",
-          side = "right",
-          title = "Right Axis",
-          showgrid = FALSE,
-          autorange = TRUE,
-          fixedrange = FALSE,
-          rangemode = "auto"
-        ),
         # Set up hover label formatting
         hoverlabel = list(
           align = "left",
@@ -938,6 +987,145 @@ server <- function(input, output, session) {
         ),
         hovermode = "x unified"
       )
+    
+    # Determine which series go on left vs right axis
+    left_axis_series <- character(0)
+    right_axis_series <- character(0)
+    
+    for (series in unique(storedData()$Combined)) {
+      use_right_axis <- isTRUE(input[[paste0("rightaxis_", gsub("[^[:alnum:]]", "", series))]])
+      if (use_right_axis) {
+        right_axis_series <- c(right_axis_series, series)
+      } else {
+        left_axis_series <- c(left_axis_series, series)
+      }
+    }
+    
+    # Get unique units for each axis
+    left_axis_units <- character(0)
+    right_axis_units <- character(0)
+    
+    if (length(left_axis_series) > 0) {
+      left_axis_units <- storedData() %>%
+        filter(Combined %in% left_axis_series) %>%
+        pull(Units) %>%
+        unique()
+    }
+    
+    if (length(right_axis_series) > 0) {
+      right_axis_units <- storedData() %>%
+        filter(Combined %in% right_axis_series) %>%
+        pull(Units) %>%
+        unique()
+    }
+    
+    # Create axis titles from units
+    left_axis_title <- if (length(left_axis_units) > 0) {
+      paste(left_axis_units, collapse = ", ")
+    } else {
+      "Axis Title"
+    }
+    
+    right_axis_title <- if (length(right_axis_units) > 0) {
+      paste(right_axis_units, collapse = ", ")
+    } else {
+      "Axis Title"
+    }
+    
+    # Initialize range variables
+    left_range <- NULL
+    right_range <- NULL
+    
+    # Calculate aligned zero ranges if both axes have data and align zeros is enabled
+    if (input$alignZeros && length(right_axis_series) > 0 && length(left_axis_series) > 0) {
+      # Get the value ranges for both axes
+      left_data <- storedData() %>% filter(Combined %in% left_axis_series)
+      right_data <- storedData() %>% filter(Combined %in% right_axis_series)
+      
+      # Calculate the ranges for each axis
+      left_range <- if(nrow(left_data) > 0) {
+        c(min(left_data$Value, na.rm = TRUE), max(left_data$Value, na.rm = TRUE))
+      } else {
+        c(0, 1)  # Default range if no data
+      }
+      
+      right_range <- if(nrow(right_data) > 0) {
+        c(min(right_data$Value, na.rm = TRUE), max(right_data$Value, na.rm = TRUE))
+      } else {
+        c(0, 1)  # Default range if no data
+      }
+      
+      # Ensure ranges include zero for better alignment
+      left_range[1] <- min(left_range[1], 0)
+      right_range[1] <- min(right_range[1], 0)
+      
+      # Calculate how to align the zeros
+      # We'll derive scale factors to ensure the zero points align
+      left_span <- left_range[2] - left_range[1]
+      right_span <- right_range[2] - right_range[1]
+      
+      # Calculate the zero position as a fraction of the range
+      left_zero_pos <- if(left_range[1] < 0) abs(left_range[1]) / left_span else 0
+      right_zero_pos <- if(right_range[1] < 0) abs(right_range[1]) / right_span else 0
+      
+      # Adjust ranges to align zeros
+      if(left_zero_pos > 0 || right_zero_pos > 0) {
+        # Use the larger zero position to adjust both scales
+        target_zero_pos <- max(left_zero_pos, right_zero_pos)
+        
+        # Recalculate ranges to position zero at the same relative position
+        if(left_zero_pos != target_zero_pos) {
+          if(left_range[1] < 0) {
+            # Negative values exist
+            new_min <- -target_zero_pos * left_span / (1 - target_zero_pos)
+            left_range <- c(new_min, left_range[2])
+          } else {
+            # Only positive values
+            new_min <- -target_zero_pos * left_range[2] / (1 - target_zero_pos)
+            left_range[1] <- new_min
+          }
+        }
+        
+        if(right_zero_pos != target_zero_pos) {
+          if(right_range[1] < 0) {
+            # Negative values exist
+            new_min <- -target_zero_pos * right_span / (1 - target_zero_pos)
+            right_range <- c(new_min, right_range[2])
+          } else {
+            # Only positive values
+            new_min <- -target_zero_pos * right_range[2] / (1 - target_zero_pos)
+            right_range[1] <- new_min
+          }
+        }
+      }
+    }
+    
+    # Configure right-side y-axis
+    if (!is.null(right_range)) {
+      p <- p %>% layout(
+        yaxis2 = list(
+          overlaying = "y",
+          side = "right",
+          title = right_axis_title,
+          showgrid = FALSE,
+          range = right_range,  # Set explicit range if calculated
+          fixedrange = FALSE,
+          rangemode = "normal"
+        )
+      )
+    } else {
+      p <- p %>% layout(
+        yaxis2 = list(
+          overlaying = "y",
+          side = "right",
+          title = right_axis_title,
+          showgrid = FALSE,
+          autorange = TRUE,
+          fixedrange = FALSE,
+          rangemode = "auto"
+        )
+      )
+    }
     
     # Handle recession shading if enabled
     recession_shapes <- list()
@@ -997,6 +1185,9 @@ server <- function(input, output, session) {
         "#000000"
       }
       
+      # Get units for this series
+      series_units <- series_data$Units[1]
+      
       # Add the line trace for this series
       p <- p %>% add_trace(
         data = series_data,
@@ -1012,7 +1203,7 @@ server <- function(input, output, session) {
         ),
         hovertemplate = paste0(
           "<b>%{text}</b><br>",
-          "<span style='color:", series_color, "'></span> Value: %{y:.2f}",
+          "<span style='color:", series_color, "'></span> Value: %{y:.2f} ", series_units,  # Add units to hover
           "<extra></extra>"
         ),
         text = ~Combined,
@@ -1020,18 +1211,39 @@ server <- function(input, output, session) {
       )
     }
     
-    # Apply appropriate tick formatting based on axis type
-    if (any(storedData()$Axis_Type == "Percentage")) {
-      p <- p %>% layout(
-        yaxis = list(tickformat = ".1%", autorange = TRUE, fixedrange = FALSE, rangemode = "auto"),
-        yaxis2 = list(tickformat = ".1%", autorange = TRUE, fixedrange = FALSE, rangemode = "auto")
-      )
-    } else {
-      p <- p %>% layout(
-        yaxis = list(tickformat = ",", autorange = TRUE, fixedrange = FALSE, rangemode = "auto"),
-        yaxis2 = list(tickformat = ",", autorange = TRUE, fixedrange = FALSE, rangemode = "auto")
-      )
+    # Determine tick formatting for each axis based on the series assigned to them
+    left_percent <- FALSE
+    right_percent <- FALSE
+    
+    if (length(left_axis_series) > 0) {
+      left_percent <- any(storedData() %>% 
+                            filter(Combined %in% left_axis_series) %>% 
+                            pull(Axis_Type) == "Percentage")
     }
+    
+    if (length(right_axis_series) > 0) {
+      right_percent <- any(storedData() %>% 
+                             filter(Combined %in% right_axis_series) %>% 
+                             pull(Axis_Type) == "Percentage")
+    }
+    
+    # Apply appropriate tick formatting based on axis type
+    p <- p %>% layout(
+      yaxis = list(
+        tickformat = if(left_percent) ".1%" else ",", 
+        autorange = is.null(left_range),
+        range = left_range,
+        fixedrange = FALSE, 
+        rangemode = if(is.null(left_range)) "auto" else "normal"
+      ),
+      yaxis2 = list(
+        tickformat = if(right_percent) ".1%" else ",", 
+        autorange = is.null(right_range),
+        range = right_range,
+        fixedrange = FALSE, 
+        rangemode = if(is.null(right_range)) "auto" else "normal"
+      )
+    )
     
     # Add reference lines if enabled
     if (input$addHorizontalLine) {
@@ -1088,22 +1300,24 @@ server <- function(input, output, session) {
         linewidth = 1,
         linecolor = 'black',
         mirror = FALSE,
-        title = "Left Axis", 
+        title = left_axis_title,  # Dynamic left axis title based on units
         tickfont = list(size = 12),
-        autorange = TRUE,
+        autorange = is.null(left_range),
+        range = left_range,
         fixedrange = FALSE,
-        rangemode = "auto"
+        rangemode = if(is.null(left_range)) "auto" else "normal"
       ),
       yaxis2 = list(
         showline = TRUE,
         linewidth = 1,
         linecolor = 'black',
         mirror = FALSE,
-        title = "Right Axis", 
+        title = right_axis_title,  # Dynamic right axis title based on units
         tickfont = list(size = 12),
-        autorange = TRUE,
+        autorange = is.null(right_range),
+        range = right_range,
         fixedrange = FALSE,
-        rangemode = "auto"
+        rangemode = if(is.null(right_range)) "auto" else "normal"
       ),
       showlegend = TRUE,
       legend = list(
@@ -1123,12 +1337,16 @@ server <- function(input, output, session) {
         l = 50
       )
     )
-  })  
-
+  })
+  
   #  Add currently visualized data to stored data
   observeEvent(input$addToStoredData, {
     new_data <- filteredData() %>%
-      mutate(Combined = paste(Indicator, Transform_Name, index_col, sep = " - "))
+      # Create the new Combined field in sentence format
+      mutate(Combined = paste0(
+        Indicator, " for NAICS ", NAICS_Code, ": ", NAICS_Name, 
+        ifelse(Transform_Name != "", paste0(", ", Transform_Name), "")
+      ))
     
     # Check if any of the new series already exist in storedData
     existing_series <- unique(storedData()$Combined)
@@ -1174,10 +1392,12 @@ server <- function(input, output, session) {
                           index_col = character(),
                           Transform_Name = character(),
                           Combined = character(),
-                          Axis_Type = character()))
+                          Axis_Type = character(),
+                          Units = character()))  # Add Units here
   })
   
   #  Download handler for stored data
+  # Update this block
   output$downloadStoredData <- downloadHandler(
     filename = function() {
       paste("final_visualization_data_", Sys.Date(), ".csv", sep = "")
@@ -1189,7 +1409,7 @@ server <- function(input, output, session) {
         # Create a unique identifier for each series
         mutate(Series = paste(Indicator, Transform_Name, index_col, sep = " - ")) %>%
         # Select only the columns we need
-        select(Date, Series, Value)
+        select(Date, Series, Value, Units)  # Add Units to the export
       
       # Pivot the data from long to wide format
       wide_data <- data_to_export %>%
@@ -1206,13 +1426,31 @@ server <- function(input, output, session) {
         wide_data$`User Vertical Line` <- format(vertical_line_date, "%Y-%m-%d")
       }
       
+      # Add a Units metadata row
+      units_row <- data_to_export %>%
+        distinct(Series, Units) %>%
+        pivot_wider(names_from = Series, values_from = Units)
+      
+      # Combine data with units metadata
+      metadata <- data.frame(Date = "Units", stringsAsFactors = FALSE)
+      for (col in names(wide_data)[-1]) {  # Skip the Date column
+        if (col %in% names(units_row)) {
+          metadata[[col]] <- units_row[[col]][1]
+        } else {
+          metadata[[col]] <- NA
+        }
+      }
+      
+      combined_data <- rbind(metadata, wide_data)
+      
       # Write the wide-format data to a CSV file
-      write.csv(wide_data, file, row.names = FALSE)
+      write.csv(combined_data, file, row.names = FALSE)
     }
   )
   
   #  Render series manager UI
   # Render the UI for managing stored series, including color pickers
+  # Update this block in the seriesManager renderUI function
   output$seriesManager <- renderUI({
     series_names <- unique(storedData()$Combined)
     
@@ -1224,26 +1462,39 @@ server <- function(input, output, session) {
       tags$div(
         lapply(seq_along(series_names), function(i) {
           name <- series_names[i]
+          # Create a sanitized ID for the series name
+          sanitized_id <- gsub("[^[:alnum:]]", "", name)
+          
+          # Get the units for this series
+          series_units <- storedData() %>%
+            filter(Combined == name) %>%
+            pull(Units) %>%
+            unique() %>%
+            .[1]
+          
           # Calculate default color index, cycling through the palette if needed
           color_index <- ((i-1) %% length(default_colors)) + 1
           
           tags$div(
             style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;",
-            tags$span(style = "width: 30%; word-wrap: break-word;", name),
+            tags$div(style = "width: 25%; word-wrap: break-word;", 
+                     tags$span(name),
+                     tags$br(),
+                     tags$small(style = "color: #666;", series_units)),  # Add units as smaller text
             tags$div(style = "width: 15%; text-align: center;",
-                     checkboxInput(paste0("highlight_", gsub("[^[:alnum:]]", "", name)), 
+                     checkboxInput(paste0("highlight_", sanitized_id), 
                                    "Bold", value = FALSE)
             ),
             tags$div(style = "width: 15%; text-align: center;",
-                     checkboxInput(paste0("rightaxis_", gsub("[^[:alnum:]]", "", name)), 
+                     checkboxInput(paste0("rightaxis_", sanitized_id), 
                                    "Right Axis", value = FALSE)
             ),
             tags$div(style = "width: 15%; text-align: center;",
-                     colourInput(paste0("color_", gsub("[^[:alnum:]]", "", name)),
+                     colourInput(paste0("color_", sanitized_id),
                                  NULL,  # No label
                                  default_colors[color_index])
             ),
-            actionButton(paste0("remove_", name), "Remove",  
+            actionButton(paste0("remove_", sanitized_id), "Remove",  
                          style = "width: 20%; font-size: 0.8em;")
           )
         })
@@ -1255,7 +1506,10 @@ server <- function(input, output, session) {
   observe({
     series_names <- unique(storedData()$Combined)
     lapply(series_names, function(name) {
-      observeEvent(input[[paste0("remove_", name)]], {
+      # Create the same sanitized ID
+      sanitized_id <- gsub("[^[:alnum:]]", "", name)
+      
+      observeEvent(input[[paste0("remove_", sanitized_id)]], {
         # Create a new data frame excluding the removed series
         new_stored_data <- storedData() %>% 
           filter(Combined != name)
@@ -1265,7 +1519,7 @@ server <- function(input, output, session) {
         
         # Remove the associated input elements
         removeUI(
-          selector = paste0("#highlight_", gsub("[^[:alnum:]]", "", name), "-label"),
+          selector = paste0("#highlight_", sanitized_id, "-label"),
           immediate = TRUE
         )
       }, ignoreInit = TRUE)
