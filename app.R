@@ -723,9 +723,9 @@ server <- function(input, output, session) {
         filtered <- filtered %>%
           group_by(Indicator, index_col) %>%
           arrange(Date, .by_group = TRUE) %>%
-          mutate(Value = dplyr::lag(zoo::rollmean(Value, k = period, 
-                                                  fill = NA, align = "right"), 
-                                    period - 1),
+          # Fixed implementation: removed the lag operation
+          mutate(Value = zoo::rollmean(Value, k = period, 
+                                       fill = NA, align = "right"),
                  Transform_Name = ifelse(Transform_Name == "",
                                          transform,
                                          paste(Transform_Name, transform, sep = ", ")))
