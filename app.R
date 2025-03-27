@@ -16,8 +16,7 @@ load("data_index.RData")
 current_month <- as.integer(format(Sys.Date(), "%m"))
 current_year <- as.integer(format(Sys.Date(), "%Y"))
 
-# Define UI
-# Define UI
+
 css <- HTML("
 /* Style for the smaller control boxes within panels */
 .control-box {
@@ -39,46 +38,143 @@ css <- HTML("
   border: 1px solid #ddd !important;     /* Light grey border */
 }
 
-/* Style for all tabs container */
-.nav-tabs {
-  border-bottom: 1px solid #ddd;
+/* Title panel styling */
+.title-panel {
+  padding: 15px 0;
+  margin-bottom: 20px;
+}
+
+.title-panel h2 {
+  font-weight: 500;
+  margin: 0;
+  color: #333;
+}
+
+/* Container for sub-navigation */
+#sub-navigation-container {
+  margin-top: 0;
+  background-color: #ffffff;
+}
+
+.container-fluid {
+  padding-left: 30px;
+  padding-right: 30px;
+}
+
+/* Main navigation bar styling */
+.main-navbar {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 0;
+  padding: 0;
+}
+
+.main-navbar .nav-tabs {
+  border-bottom: none;
   display: flex;
   width: 100%;
 }
 
-/* Make tabs take equal width */
-.nav-tabs > li {
+.main-navbar .nav-tabs > li {
   flex: 1;
   text-align: center;
+  margin-bottom: 0;
 }
 
-/* Normal state of tabs */
-.nav-tabs > li > a {
-  background-color: #f0f8ff;  /* Same light blue as panels */
-  color: #333;
-  border: 1px solid #add8e6;
-  margin-right: 2px;
-  white-space: normal;  /* Allow text to wrap */
-  height: 100%;
+.main-navbar .nav-tabs > li > a {
+  color: #505050;
+  background-color: #ffffff;
+  border: none;
+  border-radius: 0;
+  font-size: 16px;
+  font-weight: 500;
+  margin-right: 0;
+  padding: 15px 0;
+  transition: all 0.2s ease;
+}
+
+.main-navbar .nav-tabs > li > a:hover {
+  background-color: #f8f9fa;
+  border: none;
+}
+
+.main-navbar .nav-tabs > li.active > a,
+.main-navbar .nav-tabs > li.active > a:hover,
+.main-navbar .nav-tabs > li.active > a:focus {
+  color: #2470dc;
+  background-color: #ffffff;
+  border: none;
+  border-bottom: 3px solid #2470dc;
+  font-weight: 600;
+}
+
+/* Sub navigation bar styling */
+.sub-navbar {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e6e6e6;
+  padding: 0;
+  margin-bottom: 20px;
+}
+
+.sub-navbar .nav-tabs {
+  border-bottom: none;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 0 15px;
 }
 
-/* Hover state of tabs */
-.nav-tabs > li > a:hover {
-  background-color: #e6f3ff;
-  border-color: #add8e6;
+.sub-navbar .nav-tabs > li {
+  margin-bottom: 0;
+  margin-right: 30px;
 }
 
-/* Active/selected tab */
-.nav-tabs > li.active > a,
-.nav-tabs > li.active > a:hover,
-.nav-tabs > li.active > a:focus {
-  background-color: #4a90e2;  /* Bright blue for active tab */
-  color: white;
-  border: 1px solid #357abd;
-  border-bottom-color: transparent;
+.sub-navbar .nav-tabs > li > a {
+  color: #707070;
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  font-size: 14px;
+  padding: 12px 0;
+  margin-right: 0;
+  transition: all 0.2s ease;
+}
+
+.sub-navbar .nav-tabs > li > a:hover {
+  color: #2470dc;
+  background-color: transparent;
+  border: none;
+}
+
+.sub-navbar .nav-tabs > li.active > a,
+.sub-navbar .nav-tabs > li.active > a:hover,
+.sub-navbar .nav-tabs > li.active > a:focus {
+  color: #2470dc;
+  background-color: transparent;
+  border: none;
+  border-bottom: 2px solid #2470dc;
+  font-weight: 500;
+}
+
+/* Style for chart and data box in visualization manager */
+.panel-content .chart-container {
+  margin-bottom: 15px;
+}
+
+/* Ensure proper spacing for the data box */
+.panel-content .data-box {
+  margin-top: 15px;
+}
+
+/* Ensure full width for the chart */
+.panel-content .chart-container, 
+.panel-content .data-box {
+  width: 100%;
+}
+
+/* Style for stacked date range inputs */
+.input-daterange input {
+  display: block !important;
+  width: 100% !important;
+  margin-bottom: 5px;
 }
 
 /* Style for action buttons container */
@@ -113,316 +209,669 @@ css <- HTML("
   background-color: #e9ecef;
 }
 
-/* Style for stacked date range inputs */
-.input-daterange input {
-  display: block !important;
-  width: 100% !important;
-  margin-bottom: 5px;
+/* Sidebar panel styling */
+.sidebar-panel {
+  background-color: #f0f8ff;
+  border: 1px solid #add8e6;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  padding: 15px;
 }
 
-/* Custom flex row for 5 equal columns */
-.flex-row-5 {
+/* Style for sidebar inputs */
+.sidebar-panel .form-group {
+  margin-bottom: 12px;
+}
+
+/* Two-column layout for sidebar */
+.sidebar-row {
   display: flex;
   flex-wrap: wrap;
-  margin-right: -15px;
-  margin-left: -15px;
+  margin-left: -5px;
+  margin-right: -5px;
 }
 
-/* Default mobile-first layout - full width columns */
-.flex-row-5 > div {
+.sidebar-col-6 {
+  flex: 0 0 50%;
+  max-width: 50%;
+  padding-left: 5px;
+  padding-right: 5px;
+  box-sizing: border-box;
+}
+
+.sidebar-col-12 {
   flex: 0 0 100%;
   max-width: 100%;
-  padding-right: 15px;
-  padding-left: 15px;
-  margin-bottom: 15px;  /* Add space between stacked columns */
+  padding-left: 5px;
+  padding-right: 5px;
+  box-sizing: border-box;
 }
 
-/* Medium devices (tablets, 768px and up) */
-@media (min-width: 768px) {
-  .flex-row-5 > div {
-    flex: 0 0 50%;
-    max-width: 50%;
-  }
+/* Bottom buttons in sidebar */
+.sidebar-buttons {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e6e6e6;
 }
 
-/* Large devices (desktops, 992px and up) */
-@media (min-width: 992px) {
-  .flex-row-5 > div {
-    flex: 0 0 20%;
-    max-width: 20%;
-    margin-bottom: 0;  /* Remove bottom margin in horizontal layout */
-  }
+.sidebar-btn {
+  width: 100%;
+  margin-bottom: 10px;
+  white-space: normal;
 }
 
-/* Ensure control boxes take full height in flex layout */
-.flex-row-5 .control-box {
+/* Chart container styling */
+.chart-container {
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.chart-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #2c3e50;
+}
+
+/* Manager panel styling */
+.manager-panel {
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 15px;
+}
+
+.manager-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #2c3e50;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+}
+
+/* Date range input styling for sidebar */
+.date-range-full {
+  width: 100%;
+}
+
+/* Combined panel styling */
+.combined-panel {
+  background-color: #f0f8ff;
+  border: 1px solid #add8e6;
+  border-radius: 4px;
+  padding: 15px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* Make smaller controls more compact */
+.compact-control .control-label {
+  font-size: 12px;
+  margin-bottom: 3px;
+}
+
+.compact-control .form-control {
+  font-size: 12px;
+  height: 30px;
+  padding: 4px 8px;
+}
+
+/* Make picker input more compact in sidebar */
+.sidebar-panel .selectize-input {
+  min-height: 30px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.sidebar-panel .selectize-dropdown {
+  font-size: 12px;
+}
+
+/* Action box styling */
+.action-box {
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 15px;
   height: 100%;
-}")
+}
 
+.action-box h4 {
+  font-size: 16px;
+  margin-top: 0;
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #ddd;
+  color: #2c3e50;
+}
+
+.action-button {
+  width: 100%;
+  margin-bottom: 10px;
+  text-align: left;
+  white-space: normal;
+}
+
+/* Section divider in the action box */
+.action-section {
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+}
+
+/* Data management box styling */
+.data-box {
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 15px;
+  height: 100%;
+}
+
+.data-box h4 {
+  font-size: 16px;
+  margin-top: 0;
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #ddd;
+  color: #2c3e50;
+}
+
+/* New styles for the collapsible panel */
+.panel-collapsible {
+  border: 1px solid #add8e6;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  background-color: #f0f8ff;
+  overflow: hidden;
+}
+
+.panel-header {
+  padding: 10px 15px;
+  background-color: #4a90e2;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel-header:hover {
+  background-color: #357abd;
+}
+
+.panel-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.panel-icon {
+  transition: transform 0.3s;
+}
+
+.panel-icon.collapsed {
+  transform: rotate(-90deg);
+}
+
+.panel-content {
+  padding: 15px;
+  max-height: 2000px;
+  transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+  overflow: hidden;
+}
+
+.panel-content.collapsed {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  overflow: hidden;
+}
+")
+
+# UI Section
 ui <- fluidPage(
   tags$head(
-    tags$style(css)
+    tags$style(css),
+    tags$script(HTML("
+      $(document).ready(function() {
+        // Make both the header and icon clickable for toggle
+        $('#panel-header').click(function(e) {
+          // This prevents double-firing when clicking the icon
+          e.stopPropagation();
+          // Toggle the panel state
+          Shiny.setInputValue('panel_header_click', Math.random(), {priority: 'event'});
+        });
+        
+        Shiny.addCustomMessageHandler('updatePanelState', function(message) {
+          if (message.collapsed) {
+            $('#panel-icon').addClass('collapsed');
+            $('#panel-content').addClass('collapsed');
+          } else {
+            $('#panel-icon').removeClass('collapsed');
+            $('#panel-content').removeClass('collapsed');
+          }
+        });
+        
+        // Add smooth transitions when switching tabs
+        $('.nav-tabs a').on('shown.bs.tab', function(event){
+          $(event.target).parent().addClass('active').siblings().removeClass('active');
+        });
+      });
+    "))
   ),
   
-  titlePanel("Industrial Strategy Economic Monitor (ISEM) Viewer"),
+  div(class = "title-panel",
+      div(class = "container-fluid",
+          h2("Sectoral Economic Data Tool")
+      )
+  ),
   
-  tabsetPanel(
-    # First tab - Labor Market Status
-    # First tab - Labor Market Status
-    tabPanel("Select",
-             fluidRow(
-               column(12,
-                      wellPanel(
-                        div(class = "flex-row-5",
-                            # First control box - Date
-                            div(
-                              wellPanel(
-                                class = "control-box",
-                                h4("Date", style = "color: #2c3e50; border-bottom: 1px solid #add8e6; padding-bottom: 10px;"),
-                                dateInput("startDate", "Start:",
-                                          value = as.Date(paste("1900-01-01")),
-                                          min = "1900-01-01",
-                                          max = Sys.Date(),
-                                          format = "yyyy-mm",
-                                          startview = "year"),
-                                dateInput("endDate", "End:",
-                                          value = Sys.Date(),
-                                          min = "1900-01-01",
-                                          max = Sys.Date(),
-                                          format = "yyyy-mm",
-                                          startview = "year")
-                              )
-                            ),
-                            # Second control box - Source
-                            div(
-                              wellPanel(
-                                class = "control-box",
-                                h4("Source", style = "color: #2c3e50; border-bottom: 1px solid #add8e6; padding-bottom: 10px;"),
-                                pickerInput("datasetDropdown", "Select Dataset:",
-                                            choices = unique(data$Dataset),
-                                            options = list(`live-search` = TRUE)),
-                                pickerInput("indicatorDropdown", "Select Indicator:",
-                                            choices = unique(data$Indicator),
-                                            selected = unique(data$Indicator)[1],
-                                            options = list(`live-search` = TRUE))
-                              )
-                            ),
-                            # Third control box - Filter
-                            div(
-                              wellPanel(
-                                class = "control-box",
-                                h4("Filter", style = "color: #2c3e50; border-bottom: 1px solid #add8e6; padding-bottom: 10px;"),
-                                pickerInput("thematicGroupings", "Industry Constraint",
-                                            choices = c("No Constraint", "INFRASTRUCTURE", "Roads and Bridges", "Public Transit",  "EV Infrastructure", "Airports", "Port Infrastructure",
-                                                        "Water Infrastructure", "Internet and Communications Infrastructure",
-                                                        "Electrical Grid and Transmission Infrastructure", "CLEAN ENERGY", "Wind Turbines",
-                                                        "Solar Panels", "Batteries", "Electric Vehicles", "Nuclear Power", "Carbon Capture and Storage",
-                                                        "Clean Hydrogen", "Critical Minerals", "Geothermal Energy", "Heat Pumps", "SEMICONDUCTORS", "HOUSING", "AUTOMOBILES"),
-                                            options = list(`live-search` = TRUE)),
-                                pickerInput("naicsConstraint", "NAICS Code Constraint:",
-                                            choices = c("No Constraint", "", unique(data$index_col[grepl("^\\d{3}\\b", data$NAICS_Code)])),
-                                            options = list(`live-search` = TRUE))
-                              )
-                            ),
-                            # Fourth control box - Sector
-                            div(
-                              wellPanel(
-                                class = "control-box",
-                                h4("Sector", style = "color: #2c3e50; border-bottom: 1px solid #add8e6; padding-bottom: 10px;"),
-                                pickerInput("naicsIndex", "Select NAICS Code:",
-                                            choices = NULL,
-                                            selected = NULL,
-                                            options = list(`live-search` = TRUE)),
-                                checkboxInput("showSubIndustries", "Show Sub-Industries?", value = FALSE),
-                                checkboxInput("showAllSeries", "Show All Series?", value = FALSE)
-                              )
-                            ),
-                            # Fifth control box - Seasonality (moved from Transform tab)
-                            div(
-                              wellPanel(
-                                class = "control-box",
-                                h4("Seasonality", style = "color: #2c3e50; border-bottom: 1px solid #add8e6; padding-bottom: 10px;"),
-                                selectInput("seasonalAdjustment", "Seasonal Adjustment:",
-                                            choices = NULL),
-                                checkboxInput("useSeasonalAdjustment", "Apply Seasonal Adjustment?", value = FALSE)
-                              )
-                            )
-                        )
-                      )
+  # Main Navigation Bar (Dataset Categories)
+  div(class = "main-navbar",
+      div(class = "container-fluid",
+          tabsetPanel(id = "datasetNav", type = "tabs",
+                      tabPanel("International Trade", value = "International Trade"),
+                      tabPanel("Production and Capacity", value = "Production and Capacity"),
+                      tabPanel("Price Indices", value = "Price Indices"),
+                      tabPanel("Current Employment Statistics", value = "Current Employment Statistics"),
+                      tabPanel("M3 Manufacturers Shipments, Inventories & Orders", 
+                               value = "M3 Manufacturers Shipments, Inventories & Orders"),
+                      tabPanel("Investment", value = "Investment")
+          )
+      )
+  ),
+  
+  # Container for the sub-navigation
+  div(id = "sub-navigation-container",
+      # Sub Navigation Bar for International Trade
+      conditionalPanel(
+        condition = "input.datasetNav == 'International Trade'",
+        div(class = "sub-navbar",
+            div(class = "container-fluid",
+                tabsetPanel(id = "internationalTradeNav", type = "tabs",
+                            tabPanel("Imports", value = "Imports"),
+                            tabPanel("Exports", value = "Exports"),
+                            tabPanel("PPI-Deflated Imports", value = "PPI-Deflated Imports"),
+                            tabPanel("IPI-Deflated Imports", value = "IPI-Deflated Imports"),
+                            tabPanel("PPI-Adjusted Exports", value = "PPI-Adjusted Exports"),
+                            tabPanel("EPI-Adjusted Exports", value = "EPI-Adjusted Exports")
+                )
+            )
+        )
+      ),
+      
+      # Sub Navigation for Production and Capacity
+      conditionalPanel(
+        condition = "input.datasetNav == 'Production and Capacity'",
+        div(class = "sub-navbar",
+            div(class = "container-fluid",
+                tabsetPanel(id = "productionCapacityNav", type = "tabs",
+                            tabPanel("Industrial Production", value = "Industrial Production"),
+                            tabPanel("Capacity Utilization", value = "Capacity Utilization"),
+                            tabPanel("Capacity", value = "Capacity"),
+                            tabPanel("Relative Importance Weights", value = "Relative Importance Weights")
+                )
+            )
+        )
+      ),
+      
+      # Sub Navigation for Price Indices
+      conditionalPanel(
+        condition = "input.datasetNav == 'Price Indices'",
+        div(class = "sub-navbar",
+            div(class = "container-fluid",
+                tabsetPanel(id = "priceIndicesNav", type = "tabs",
+                            tabPanel("Import Price Index", value = "Import Price Index"),
+                            tabPanel("Export Price Index", value = "Export Price Index"),
+                            tabPanel("Producer Price Index", value = "Producer Price Index")
+                )
+            )
+        )
+      ),
+      
+      # Sub Navigation for Current Employment Statistics
+      conditionalPanel(
+        condition = "input.datasetNav == 'Current Employment Statistics'",
+        div(class = "sub-navbar",
+            div(class = "container-fluid",
+                tabsetPanel(id = "employmentStatsNav", type = "tabs",
+                            tabPanel("All Employees", value = "All Employees"),
+                            tabPanel("Women Employees", value = "Women Employees"),
+                            tabPanel("Average Hourly Earnings of All Employees", 
+                                     value = "Average Hourly Earnings of All Employees"),
+                            tabPanel("Average Weekly Hours of All Employees", 
+                                     value = "Average Weekly Hours of All Employees")
+                )
+            )
+        )
+      ),
+      
+      # Sub Navigation for M3 Manufacturers
+      conditionalPanel(
+        condition = "input.datasetNav == 'M3 Manufacturers Shipments, Inventories & Orders'",
+        div(class = "sub-navbar",
+            div(class = "container-fluid",
+                tabsetPanel(id = "manufacturersNav", type = "tabs",
+                            tabPanel("Finished Goods Inventories", value = "Finished Goods Inventories"),
+                            tabPanel("Inventories to Shipments Ratio", value = "Inventories to Shipments Ratio"),
+                            tabPanel("Material and Supply Inventories", value = "Material and Supply Inventories"),
+                            tabPanel("Total Inventories", value = "Total Inventories"),
+                            tabPanel("Unfilled Orders", value = "Unfilled Orders"),
+                            tabPanel("Unfilled Orders to Shipments Ratios", 
+                                     value = "Unfilled Orders to Shipments Ratios"),
+                            tabPanel("Value of Shipments", value = "Value of Shipments"),
+                            tabPanel("Work in Process Inventories", value = "Work in Process Inventories"),
+                            tabPanel("New Orders", value = "New Orders")
+                )
+            )
+        )
+      ),
+      
+      # Sub Navigation for Investment
+      conditionalPanel(
+        condition = "input.datasetNav == 'Investment'",
+        div(class = "sub-navbar",
+            div(class = "container-fluid",
+                tabsetPanel(id = "investmentNav", type = "tabs",
+                            tabPanel("Structures Investment", value = "Structures Investment"),
+                            tabPanel("Real Structures Investment", value = "Real Structures Investment"),
+                            tabPanel("Equipment Investment", value = "Equipment Investment"),
+                            tabPanel("Real Equipment Investment", value = "Real Equipment Investment")
+                )
+            )
+        )
+      )
+  ),
+  
+  # New split-view layout (25% - 75%)
+  fluidRow(
+    # Left sidebar (25% width) for Select and Transform
+    column(width = 3,
+           # Combined panel for Select and Transform
+           div(class = "sidebar-panel",
+               # Date Range - Full Width
+               div(class = "sidebar-row",
+                   div(class = "sidebar-col-12",
+                       dateRangeInput("dateRange", 
+                                      label = "Date Range",
+                                      start = as.Date("1900-01-01"),
+                                      end = Sys.Date(),
+                                      min = "1900-01-01",
+                                      max = Sys.Date(),
+                                      format = "mm/dd/yyyy",
+                                      separator = " → ")
+                   )
+               ),
+               
+               # Industry and NAICS constraints - Two columns
+               div(class = "sidebar-row",
+                   div(class = "sidebar-col-6",
+                       pickerInput("thematicGroupings", "Industry Constraint",
+                                   choices = c("No Constraint", "INFRASTRUCTURE", "Roads and Bridges", "Public Transit",  
+                                               "EV Infrastructure", "Airports", "Port Infrastructure",
+                                               "Water Infrastructure", "Internet and Communications Infrastructure",
+                                               "Electrical Grid and Transmission Infrastructure", "CLEAN ENERGY", 
+                                               "Wind Turbines", "Solar Panels", "Batteries", "Electric Vehicles", 
+                                               "Nuclear Power", "Carbon Capture and Storage", "Clean Hydrogen", 
+                                               "Critical Minerals", "Geothermal Energy", "Heat Pumps", 
+                                               "SEMICONDUCTORS", "HOUSING", "AUTOMOBILES"),
+                                   options = list(`live-search` = TRUE))
+                   ),
+                   div(class = "sidebar-col-6",
+                       pickerInput("naicsConstraint", "NAICS Code Constraint",
+                                   choices = c("No Constraint", "", unique(data$index_col[grepl("^\\d{3}\\b", data$NAICS_Code)])),
+                                   options = list(`live-search` = TRUE))
+                   )
+               ),
+               
+               # NAICS selection - Full width
+               div(class = "sidebar-row",
+                   div(class = "sidebar-col-12",
+                       pickerInput("naicsIndex", "Select NAICS Code:",
+                                   choices = NULL,
+                                   selected = NULL,
+                                   options = list(`live-search` = TRUE))
+                   )
+               ),
+               
+               # Checkboxes - Two columns
+               div(class = "sidebar-row",
+                   div(class = "sidebar-col-6",
+                       checkboxInput("showSubIndustries", "Show Sub-Industries?", value = FALSE)
+                   ),
+                   div(class = "sidebar-col-6",
+                       checkboxInput("useSeasonalAdjustment", "Show Seasonally Adjusted Data", value = FALSE)
+                   )
+               ),
+               
+               # Index to date - Two columns
+               div(class = "sidebar-row",
+                   div(class = "sidebar-col-6",
+                       checkboxInput("useIndexDate", "Index to Date", value = FALSE)
+                   ),
+                   div(class = "sidebar-col-6",
+                       dateInput("indexDate", "Index Date:",
+                                 value = as.Date("2020-01-01"),
+                                 min = "2000-01-01",
+                                 max = Sys.Date(),
+                                 format = "yyyy-mm",
+                                 startview = "year")
+                   )
+               ),
+               
+               # Transformations - Two columns
+               div(class = "sidebar-row",
+                   div(class = "sidebar-col-6",
+                       selectInput("movingAverageTransform", "Moving Average:", 
+                                   choices = c("No Transform", "3 Months", "6 Months", "12 Months", "18 Months", "36 Months"),
+                                   selected = "No Transform")
+                   ),
+                   div(class = "sidebar-col-6",
+                       selectInput("changeTransform", "Change:", 
+                                   choices = c("No Transform", "1 Month", "3 Months", "6 Months", "12 Months", "18 Months", "36 Months"),
+                                   selected = "No Transform")
+                   )
+               ),
+               
+               div(class = "sidebar-row",
+                   div(class = "sidebar-col-6",
+                       selectInput("percentChangeTransform", "Percent Change:", 
+                                   choices = c("No Transform", "1 Month", "3 Months", "6 Months", "12 Months", "18 Months", "36 Months"),
+                                   selected = "No Transform")
+                   ),
+                   div(class = "sidebar-col-6",
+                       selectInput("cagrTransform", "CAGR:", 
+                                   choices = c("No Transform", "1 Month", "3 Months", "6 Months", "12 Months", "18 Months", "36 Months"),
+                                   selected = "No Transform")
+                   )
+               ),
+               
+               # Bottom buttons 
+               div(class = "sidebar-buttons",
+                   div(class = "sidebar-row",
+                       div(class = "sidebar-col-12",
+                           actionButton("addToStoredData", "Add Data to Final Visualization",
+                                        class = "sidebar-btn custom-button")
+                       )
+                   ),
+                   div(class = "sidebar-row",
+                       div(class = "sidebar-col-12",
+                           actionButton("resetInputs", "Reset Inputs",
+                                        class = "sidebar-btn custom-button")
+                       )
+                   )
                )
-             )
+           )
     ),
     
-    # Second tab - Transforms (now with Seasonality removed)
-    tabPanel("Transform",
-             fluidRow(
-               column(12,
-                      wellPanel(
-                        div(class = "flex-row-5",
-                            # Index
-                            div(
-                              wellPanel(
-                                class = "control-box",
-                                h4("Index", style = "color: #2c3e50; border-bottom: 1px solid #add8e6; padding-bottom: 10px;"),
-                                checkboxInput("useIndexDate", "Index to Date", value = FALSE),
-                                dateInput("indexDate", "Index Date:",
-                                          value = as.Date("2020-01-01"),
-                                          min = "2000-01-01",
-                                          max = Sys.Date(),
-                                          format = "yyyy-mm",
-                                          startview = "year")
-                              )
-                            ),
-                            # Moving Average
-                            div(
-                              wellPanel(
-                                class = "control-box",
-                                h4("Moving Average", style = "color: #2c3e50; border-bottom: 1px solid #add8e6; padding-bottom: 10px;"),
-                                checkboxInput("useMovingAverage", "Apply Moving Average?", value = FALSE),
-                                numericInput("movingAveragePeriod", "Period (months):", value = 12, min = 1)
-                              )
-                            ),
-                            
-                            # Empty div to maintain layout
-                            div(
-                              wellPanel(
-                                class = "control-box",
-                                h4("Change", style = "color: #2c3e50; border-bottom: 1px solid #add8e6; padding-bottom: 10px;"),
-                                checkboxInput("useChange", "Apply Change?", value = FALSE),
-                                numericInput("changePeriod", "Period (months):", value = 12, min = 1)
-                              )
-                            ),
-                            # Percent Change
-                            div(
-                              wellPanel(
-                                class = "control-box",
-                                h4("Percent Change", style = "color: #2c3e50; border-bottom: 1px solid #add8e6; padding-bottom: 10px;"),
-                                checkboxInput("usePercentChange", "Apply Percent Change?", value = FALSE),
-                                numericInput("percentChangePeriod", "Period (months):", value = 12, min = 1)
-                              )
-                            ),
-                            # CAGR
-                            div(
-                              wellPanel(
-                                class = "control-box",
-                                h4("CAGR", style = "color: #2c3e50; border-bottom: 1px solid #add8e6; padding-bottom: 10px;"),
-                                checkboxInput("useCompoundAnnualGrowthRate", "Apply Compound Annual Growth Rate?", value = FALSE),
-                                numericInput("compoundAnnualGrowthRatePeriod", "Period (months):", value = 1, min = 1)
-                              )
-                            )
-                            
-                        )
-                      )
-               )
-             )
-    ),
-    
-    # Third tab - Manage
-    tabPanel("Manage",
-             fluidRow(
-               column(12,
-                      wellPanel(
-                        fluidRow(
-                          column(3,
-                                 wellPanel(
-                                   class = "control-box",
-                                   h4("Actions", style = "color: #2c3e50; border-bottom: 1px solid #add8e6; padding-bottom: 10px;"),
-                                   div(
-                                     class = "btn-group-vertical",
-                                     style = "width: 100%;",
-                                     actionButton("addToStoredData", HTML("Add Selected Data<br>To Finished Visualization"),
-                                                  class = "btn custom-button"),
-                                     downloadButton("downloadStoredData", "Download Data"),
-                                     actionButton("resetInputs", "Reset Inputs"),
-                                     actionButton("clearStoredData", HTML("Clear Data"),
-                                                  class = "btn custom-button")
-                                   )
-                                 )
-                          ),
-                          column(9,
-                                 wellPanel(
-                                   class = "control-box",
-                                   h4("Saved Data", style = "color: #2c3e50; border-bottom: 1px solid #add8e6; padding-bottom: 10px;"),
-                                   uiOutput("seriesManager")
-                                 )
-                          )
-                        )
-                      )
-               )
-             )
-    ),
-    
-    # Fourth tab - Visualize
-    tabPanel("Visualize",
-             fluidRow(
-               column(12,
-                      wellPanel(
-                        fluidRow(
-                          column(4,
-                                 wellPanel(
-                                   class = "control-box",
-                                   h4("Add Graphics", style = "color: #2c3e50; border-bottom: 1px solid #add8e6; padding-bottom: 10px;"),
-                                   fluidRow(
-                                     column(6, checkboxInput("addHorizontalLine", "Add Horizontal Line", value = FALSE)),
-                                     column(6, numericInput("horizontalLineValue", "Line Value", value = 0, step = 0.1))
-                                   ),
-                                   fluidRow(
-                                     column(6, checkboxInput("addVerticalLine", "Add Vertical Line", value = FALSE)),
-                                     column(6, dateInput("verticalLineDate", "Vertical Line Date:",
-                                                         value = Sys.Date(),
-                                                         min = "2000-01-01",
-                                                         max = Sys.Date(),
-                                                         format = "yyyy-mm",
-                                                         startview = "year"))
-                                   ),
-                                   # Add this new row:
-                                   fluidRow(
-                                     column(12, checkboxInput("addRecessionShading", "Add NBER Recession Shading", value = FALSE))
-                                   )
-                                 )
-                          ),
-                          # Add this inside the Layout section of the Visualize tab
-                          column(4,
-                                 wellPanel(
-                                   class = "control-box",
-                                   h4("Layout", style = "color: #2c3e50; border-bottom: 1px solid #add8e6; padding-bottom: 10px;"),
-                                   fluidRow(
-                                     column(6, numericInput("xLabelFreq", "X-axis Label Frequency (years):", value = 3)),
-                                     column(6, numericInput("storedXLabelFreq", "X-axis Label Frequency (years):", value = 3))
-                                   ),
-                                   # Add this new checkbox
-                                   checkboxInput("alignZeros", "Align zero lines on dual axes", value = TRUE)
-                                 )
-                          ),
-                          column(4,
-                                 wellPanel(
-                                   class = "control-box",
-                                   h4("Export", style = "color: #2c3e50; border-bottom: 1px solid #add8e6; padding-bottom: 10px;"),
-                                   textInput("finishedVisualizationTitle", "Title:", value = "Finished Visualization")
-                                 )
-                          )
-                        )
-                      )
-               )
-             )
+    # Right content area (75% width) for visualization
+    column(width = 9,
+           # First chart - Data Finder
+           div(class = "chart-container",
+               div(class = "chart-title", "Data Finder"),
+               plotlyOutput("lineChart", height = "600px")
+           )
     )
   ),
   
-  # Add plots below all tabs
+  # Full-width combined panel for visualization controls and saved data
+  # Replace the existing fluidRow for the combined panel with this:
+  
   fluidRow(
-    column(12,
-           # First chart takes full width
-           plotlyOutput("lineChart", height = "600px"),
-           # Add some spacing between charts
-           tags$div(style = "height: 40px"),
-           # Second chart takes full width
-           plotlyOutput("storedLineChart", height = "600px")
+    column(width = 12,
+           tags$div(id = "visualization-manager", class = "panel-collapsible",
+                    # Header with toggle functionality - KEEP THIS PART
+                    tags$div(id = "panel-header", class = "panel-header",
+                             tags$h3(textOutput("panelHeaderText")),
+                             tags$span(id = "panel-icon", class = "panel-icon",
+                                       icon("chevron-down"))
+                    ),
+                    # Content area (collapsible) - UPDATED LAYOUT
+                    tags$div(id = "panel-content", class = "panel-content",
+                             fluidRow(
+                               # Left side: Actions with all visualization controls
+                               column(width = 3,
+                                      div(class = "action-box",
+                                          h4("Adjust Visualization"),
+                                          
+                                          # Title input with reduced margin
+                                          div(style = "margin-bottom: 10px;",
+                                              textInput("finishedVisualizationTitle", "Title:", value = "Finished Visualization")
+                                          ),
+                                          
+                                          # Add Graphics section - more compact layout
+                                          div(class = "sidebar-row", style = "margin-bottom: 10px;",
+                                              div(class = "sidebar-col-12",
+                                                  h5("Add Graphics", style = "margin-top: 0; margin-bottom: 8px;")
+                                              ),
+                                              # Horizontal line controls on same row
+                                              div(class = "sidebar-col-6",
+                                                  div(class = "compact-control",
+                                                      checkboxInput("addHorizontalLine", "Add Horizontal Line", value = FALSE)
+                                                  )
+                                              ),
+                                              div(class = "sidebar-col-6",
+                                                  div(class = "compact-control",
+                                                      numericInput("horizontalLineValue", "Line Value", value = 0, step = 0.1)
+                                                  )
+                                              ),
+                                              
+                                              # Vertical line controls on same row
+                                              div(class = "sidebar-col-6",
+                                                  div(class = "compact-control",
+                                                      checkboxInput("addVerticalLine", "Add Vertical Line", value = FALSE)
+                                                  )
+                                              ),
+                                              div(class = "sidebar-col-6",
+                                                  div(class = "compact-control",
+                                                      dateInput("verticalLineDate", "Line Date:",
+                                                                value = Sys.Date(),
+                                                                min = "2000-01-01",
+                                                                max = Sys.Date(),
+                                                                format = "yyyy-mm",
+                                                                startview = "year")
+                                                  )
+                                              ),
+                                              
+                                              # Recession shading on its own row
+                                              div(class = "sidebar-col-12",
+                                                  div(class = "compact-control",
+                                                      checkboxInput("addRecessionShading", "Add NBER Recession Shading", value = FALSE)
+                                                  )
+                                              )
+                                          ),
+                                          
+                                          # Layout section with more compact style
+                                          div(class = "sidebar-row", style = "margin-bottom: 10px;",
+                                              div(class = "sidebar-col-12",
+                                                  h5("Layout", style = "margin-top: 0; margin-bottom: 8px;")
+                                              ),
+                                              div(class = "sidebar-col-6",
+                                                  div(class = "compact-control",
+                                                      numericInput("xLabelFreq", "Data Finder X-Labels (yrs):", value = 3)
+                                                  )
+                                              ),
+                                              div(class = "sidebar-col-6",
+                                                  div(class = "compact-control",
+                                                      numericInput("storedXLabelFreq", "Finished X-Labels (yrs):", value = 3)
+                                                  )
+                                              ),
+                                              div(class = "sidebar-col-12",
+                                                  div(class = "compact-control",
+                                                      checkboxInput("alignZeros", "Align zero lines on dual axes", value = TRUE)
+                                                  )
+                                              )
+                                          ),
+                                          
+                                          # Main action buttons with compact spacing
+                                          div(class = "sidebar-row",
+                                              div(class = "sidebar-col-6",
+                                                  downloadButton("downloadStoredData", "Download Data",
+                                                                 class = "sidebar-btn")
+                                              ),
+                                              div(class = "sidebar-col-6",
+                                                  actionButton("clearStoredData", "Clear Data",
+                                                               class = "sidebar-btn custom-button")
+                                              )
+                                          )
+                                      )
+                               ),
+                               
+                               # Right side: Visualization and Saved Data (stacked vertically)
+                               column(width = 9,
+                                      # Add Visualization Chart
+                                      div(class = "chart-container",
+                                          uiOutput("visualizationTitle"),
+                                          plotlyOutput("storedLineChart", height = "600px")
+                                      ),
+                                      # Saved Data section below chart
+                                      div(class = "data-box",
+                                          h4("Saved Data"),
+                                          uiOutput("seriesManager")
+                                      )
+                               )
+                             )
+                    )
+           )
     )
   )
 )
 
 # Define server logic
 server <- function(input, output, session) {
+  
+  # Add these code blocks to your server function:
+  # Reactive value to track panel state
+  panelCollapsed <- reactiveVal(TRUE)
+  
+  # Toggle panel collapse state when header is clicked
+  observeEvent(input$panel_header_click, {
+    # This will toggle the state regardless of data presence
+    panelCollapsed(!panelCollapsed())
+  })
+  
+  
+  
+  # Update panel header text based on data presence
+  output$panelHeaderText <- renderText({
+    if (nrow(storedData()) == 0) {
+      "Finished Visualization Manager (No Data)"
+    } else {
+      paste0("Finished Visualization Manager (", 
+             nrow(unique(storedData()[, "Combined", drop = FALSE])), 
+             " Series)")
+    }
+  })
+  
+  # Use JavaScript to handle the panel collapse/expand
+  observe({
+    # Update panel state based on panelCollapsed reactive value
+    session$sendCustomMessage("updatePanelState", 
+                              list(collapsed = panelCollapsed()))
+  })
   
   recessions_df <- data.frame(
     start = as.Date(c(
@@ -449,6 +898,7 @@ server <- function(input, output, session) {
                                        Combined = character(),
                                        Axis_Type = character(),
                                        Units = character()))  # Add Units here
+  
   
   
   # Reactive expression to extract the first three characters of the selected NAICS Constraint
@@ -529,22 +979,22 @@ server <- function(input, output, session) {
     if (input$thematicGroupings != "No Constraint") {
       data %>%
         filter(NAICS_Code %in% thematicNAICS(),
-               Indicator == input$indicatorDropdown)
+               Indicator == getCurrentIndicator())
     } else if (naicsConstraintCode() != "") {
       data %>%
         filter(str_starts(NAICS_Code, naicsConstraintCode()),
-               Indicator == input$indicatorDropdown)
+               Indicator == getCurrentIndicator())
     } else {
       data %>%
-        filter(Indicator == input$indicatorDropdown)
+        filter(Indicator == getCurrentIndicator())
     }
   })
   
   #Observer to run the dataset/indicator dropdown
-  observeEvent(input$datasetDropdown, {
+  observeEvent(getCurrentDataset(), {
     # Filter indicators based on selected dataset
     filtered_indicators <- data %>%
-      filter(Dataset == input$datasetDropdown) %>%
+      filter(Dataset == getCurrentDataset()) %>%
       pull(Indicator) %>%
       unique()
     
@@ -554,48 +1004,44 @@ server <- function(input, output, session) {
                       selected = filtered_indicators[1])
   })
   
-  observe({
-    req(input$datasetDropdown, input$indicatorDropdown)
-    
-    # Get available seasonal adjustment options for current dataset and indicator
-    available_adjustments <- data %>%
-      filter(Dataset == input$datasetDropdown,
-             Indicator == input$indicatorDropdown) %>%
-      pull(seasonal_adjustment) %>%
-      unique()
-    
-    # Create named vector for choices
-    adjustment_choices <- setNames(
-      as.character(available_adjustments),
-      ifelse(available_adjustments, "Seasonally Adjusted", "Not Seasonally Adjusted")
-    )
-    
-    # Update the seasonal adjustment dropdown
-    updateSelectInput(session, "seasonalAdjustment",
-                      choices = adjustment_choices,
-                      selected = if(length(available_adjustments) > 0) as.character(available_adjustments[1]))
-  })
-  observeEvent(c(naicsConstraintCode(), input$indicatorDropdown, input$thematicGroupings), {
+  observeEvent(c(naicsConstraintCode(), getCurrentIndicator(), input$thematicGroupings), {
     updatePickerInput(session, "naicsIndex",
                       choices = unique(filteredNAICS()$index_col),
                       selected = unique(filteredNAICS()$index_col)[1])
   })
   
-  #  Define reactive variable for transform name
+  # Define reactive variable for transform name
   transformName <- reactive({
     transforms <- c()
-    if (input$useMovingAverage == TRUE) {
-      transforms <- c(transforms, paste0(input$movingAveragePeriod, "MMA"))
+    
+    # Moving Average transformation
+    if (input$movingAverageTransform != "No Transform") {
+      # Extract the number of months from the selection
+      period <- as.numeric(gsub(" Months", "", input$movingAverageTransform))
+      transforms <- c(transforms, paste0(period, "MMA"))
     }
-    if (input$usePercentChange == TRUE) {
-      transforms <- c(transforms, paste0(input$percentChangePeriod, "m % Change"))
+    
+    # Change transformation
+    if (input$changeTransform != "No Transform") {
+      # Extract the number of months from the selection
+      period <- as.numeric(gsub(" Months?", "", input$changeTransform))
+      transforms <- c(transforms, paste0(period, "m Change"))
     }
-    if (input$useCompoundAnnualGrowthRate == TRUE) {
-      transforms <- c(transforms, paste0(input$compoundAnnualGrowthRatePeriod, "m CAGR"))
+    
+    # Percent Change transformation
+    if (input$percentChangeTransform != "No Transform") {
+      # Extract the number of months from the selection
+      period <- as.numeric(gsub(" Months?", "", input$percentChangeTransform))
+      transforms <- c(transforms, paste0(period, "m % Change"))
     }
-    if (input$useChange == TRUE) {
-      transforms <- c(transforms, paste0(input$changePeriod, "m Change"))
+    
+    # CAGR transformation
+    if (input$cagrTransform != "No Transform") {
+      # Extract the number of months from the selection
+      period <- as.numeric(gsub(" Months?", "", input$cagrTransform))
+      transforms <- c(transforms, paste0(period, "m CAGR"))
     }
+    
     if (length(transforms) == 0) {
       transforms <- ""
     }
@@ -603,11 +1049,10 @@ server <- function(input, output, session) {
   })
   
   #  Create a list of NAICS codes based on the selected index column, Show Sub-Industries option, and Show All Included Series option
+  #  Create a list of NAICS codes based on the selected index column and Show Sub-Industries option
   selectedNAICS <- reactive({
-    # Now using boolean values from checkboxes instead of "Yes"/"No" strings
-    if (input$showAllSeries) {
-      unique(filteredNAICS()$index_col)
-    } else if (input$showSubIndustries) {
+    # Now we're only using the showSubIndustries checkbox
+    if (input$showSubIndustries) {
       selected_index <- input$naicsIndex
       selected_code <- strsplit(selected_index, " - ")[[1]][1]
       naics_codes <- c(selected_code, paste0(selected_code, 1:9))
@@ -622,12 +1067,12 @@ server <- function(input, output, session) {
   #  Convert selected months and years to dates
   startDate <- reactive({
     # Force day to first of month
-    as.Date(format(input$startDate, "%Y-%m-01"))
+    as.Date(format(input$dateRange[1], "%Y-%m-01"))
   })
   
   endDate <- reactive({
     # Force day to first of month
-    as.Date(format(input$endDate, "%Y-%m-01"))
+    as.Date(format(input$dateRange[2], "%Y-%m-01"))
   })
   
   #  Convert selected index month and year to date
@@ -637,13 +1082,14 @@ server <- function(input, output, session) {
   })
   
   #fiilter data based on user selections
+  #  Filter data based on user selections
+  #  Filter data based on user selections
   filteredData <- reactive({
     filtered <- data %>%
       filter(Date >= startDate() & Date <= endDate() &
                index_col %in% selectedNAICS() &
-               Indicator == input$indicatorDropdown &
-               Dataset == input$datasetDropdown &
-               seasonal_adjustment == as.logical(input$seasonalAdjustment)) %>%
+               Indicator == getCurrentIndicator() &
+               Dataset == getCurrentDataset()) %>%
       arrange(Date) %>%
       group_by(Indicator, index_col) %>%
       arrange(Date, .by_group = TRUE)
@@ -652,6 +1098,94 @@ server <- function(input, output, session) {
     original_units <- filtered %>%
       select(Indicator, index_col, Units) %>%
       distinct()
+    
+    # Ensure Transform_Name column exists (initialize with empty string)
+    filtered <- filtered %>%
+      mutate(Transform_Name = "")
+    
+    # Check if seasonally adjusted data is requested
+    if (input$useSeasonalAdjustment) {
+      # Check if the selected data has pre-seasonally adjusted version available
+      has_sa_data <- data %>%
+        filter(Date >= startDate() & Date <= endDate() &
+                 index_col %in% selectedNAICS() &
+                 Indicator == getCurrentIndicator() &
+                 Dataset == getCurrentDataset() &
+                 seasonal_adjustment == TRUE) %>%
+        nrow() > 0
+      
+      if (has_sa_data) {
+        # Use the pre-seasonally adjusted data
+        filtered <- filtered %>%
+          filter(seasonal_adjustment == TRUE)
+        
+        # Add "Seasonally Adjusted" to the transform name
+        filtered <- filtered %>%
+          mutate(Transform_Name = if_else(Transform_Name == "", 
+                                          "Seasonally Adjusted", 
+                                          paste(Transform_Name, "Seasonally Adjusted", sep = ", ")))
+      } else {
+        # We need to apply X-13 seasonal adjustment
+        # Keep only non-seasonally adjusted data for processing
+        filtered <- filtered %>%
+          filter(seasonal_adjustment == FALSE)
+        
+        # Store original data before applying seasonal adjustment
+        original_filtered <- filtered
+        
+        # Create a flag to track if adjustment succeeds
+        sa_success <- TRUE
+        
+        # Apply X-13-ARIMA-SEATS
+        filtered <- filtered %>%
+          group_modify(~{
+            # Create a copy of the input data frame
+            result_df <- .x %>% arrange(Date)
+            
+            # Convert to time series object
+            ts_data <- ts(result_df$Value, 
+                          start = c(year(min(result_df$Date)), month(min(result_df$Date))),
+                          frequency = 12)
+            
+            # Apply X-13-ARIMA-SEATS
+            tryCatch({
+              seas_adj <- seas(ts_data, 
+                               transform.function = "none",
+                               regression.aictest = NULL,
+                               outlier = NULL,
+                               slidingspans = NULL,
+                               history = NULL)
+              
+              # Extract seasonally adjusted series and update values
+              result_df$Value <- as.numeric(final(seas_adj))
+              result_df$Transform_Name <- if(result_df$Transform_Name[1] == "") {
+                "X-13 Seasonally Adjusted"  # Use this label to indicate it's X-13 adjusted
+              } else {
+                paste(result_df$Transform_Name, "X-13 Seasonally Adjusted", sep = ", ")
+              }
+              
+            }, error = function(e) {
+              # Set the flag to indicate failure
+              sa_success <<- FALSE
+              warning(paste("Seasonal adjustment failed for", unique(.x$index_col), 
+                            ". Returning original data."))
+            })
+            
+            result_df
+          })
+        
+        # If adjustment failed, revert to original data
+        if (!sa_success) {
+          filtered <- original_filtered
+          # Auto-uncheck the seasonal adjustment checkbox
+          updateCheckboxInput(session, "useSeasonalAdjustment", value = FALSE)
+        }
+      }
+    } else {
+      # If seasonal adjustment not requested, use non-seasonally adjusted data
+      filtered <- filtered %>%
+        filter(seasonal_adjustment == FALSE)
+    }
     
     # Apply indexing if useIndexDate is TRUE
     if (input$useIndexDate) {
@@ -664,56 +1198,14 @@ server <- function(input, output, session) {
                Transform_Name = paste0("Index, [", index_format, "] = 100"),
                Units = paste0("Index, ", index_format, " = 100")) %>%  # Better format for indexed values
         ungroup()
-    } else {
-      filtered <- filtered %>%
-        mutate(Transform_Name = "")
     }
     
-    # Add Axis Type column using boolean checkbox values
+    # Add Axis Type column using dropdown values
     filtered <- filtered %>%
-      mutate(Axis_Type = ifelse(input$usePercentChange || 
-                                  input$useCompoundAnnualGrowthRate, 
+      mutate(Axis_Type = ifelse(input$percentChangeTransform != "No Transform" || 
+                                  input$cagrTransform != "No Transform", 
                                 "Percentage", "Index"))
     
-    # Apply X-13 seasonal adjustment if selected
-    if (input$useSeasonalAdjustment) {
-      filtered <- filtered %>%
-        group_modify(~{
-          # Create a copy of the input data frame
-          result_df <- .x %>% arrange(Date)
-          
-          # Convert to time series object
-          ts_data <- ts(result_df$Value, 
-                        start = c(year(min(result_df$Date)), month(min(result_df$Date))),
-                        frequency = 12)
-          
-          # Apply X-13-ARIMA-SEATS
-          tryCatch({
-            seas_adj <- seas(ts_data, 
-                             transform.function = "none",
-                             regression.aictest = NULL,
-                             outlier = NULL,
-                             slidingspans = NULL,
-                             history = NULL)
-            
-            # Extract seasonally adjusted series and update values
-            result_df$Value <- as.numeric(final(seas_adj))
-            result_df$Transform_Name <- if(result_df$Transform_Name[1] == "") {
-              "SA"  # Use abbreviated form from table
-            } else {
-              paste(result_df$Transform_Name, "SA", sep = ", ")
-            }
-            
-          }, error = function(e) {
-            warning(paste("Seasonal adjustment failed for", unique(.x$index_col), 
-                          ". Returning original data."))
-          })
-          
-          result_df
-        })
-    }
-    
-    # Apply other transforms in the specified order
     # Apply other transforms in the specified order
     transforms <- transformName()
     for (transform in transforms) {
@@ -723,7 +1215,6 @@ server <- function(input, output, session) {
         filtered <- filtered %>%
           group_by(Indicator, index_col) %>%
           arrange(Date, .by_group = TRUE) %>%
-          # Fixed implementation: removed the lag operation
           mutate(Value = zoo::rollmean(Value, k = period, 
                                        fill = NA, align = "right"),
                  Transform_Name = ifelse(Transform_Name == "",
@@ -779,19 +1270,6 @@ server <- function(input, output, session) {
       arrange(Date, Indicator, index_col)
     
     filtered
-  })  
-  
-  #  Update radio buttons based on user selection
-  observeEvent(input$usePercentChange, {
-    if (input$usePercentChange) {
-      updateCheckboxInput(session, "useCompoundAnnualGrowthRate", value = FALSE)
-    }
-  })
-  
-  observeEvent(input$useCompoundAnnualGrowthRate, {
-    if (input$useCompoundAnnualGrowthRate) {
-      updateCheckboxInput(session, "usePercentChange", value = FALSE)
-    }
   })
   
   #  Render line chart for filtered data
@@ -939,17 +1417,18 @@ server <- function(input, output, session) {
       legend = list(
         orientation = "h",
         yanchor = "top",
-        y = -0.5,
+        y = -0.4,
         xanchor = "center",
         x = 0.5,
         bgcolor = "rgba(255, 255, 255, 0.9)",
         bordercolor = "rgba(0, 0, 0, 0.2)",
-        borderwidth = 1
+        borderwidth = 1,
+        itemsizing = "constant"
       ),
       margin = list(
         t = 50,
         r = 50,
-        b = 200,
+        b = 120,
         l = 50
       ),
       hoverlabel = list(
@@ -1323,23 +1802,26 @@ server <- function(input, output, session) {
       legend = list(
         orientation = "h",
         yanchor = "top",
-        y = -0.5,
+        y = -0.45,
         xanchor = "center",
         x = 0.5,
         bgcolor = "rgba(255, 255, 255, 0.9)",
         bordercolor = "rgba(0, 0, 0, 0.2)",
-        borderwidth = 1
+        borderwidth = 1,
+        itemsizing = "constant"
       ),
       margin = list(
         t = 50,
         r = 50,
-        b = 200,
+        b = 120,
         l = 50
       )
     )
   })
   
   #  Add currently visualized data to stored data
+  # Replace your existing addToStoredData observer with this:
+  
   observeEvent(input$addToStoredData, {
     new_data <- filteredData() %>%
       # Create the new Combined field in sentence format
@@ -1358,8 +1840,11 @@ server <- function(input, output, session) {
     
     if (nrow(series_to_add) > 0) {
       storedData(rbind(storedData(), series_to_add))
+      
+      # Expand the panel when data is added
+      #      panelCollapsed(FALSE)
     }
-  })
+  })  
   
   observe({
     # Get current series names
@@ -1393,7 +1878,10 @@ server <- function(input, output, session) {
                           Transform_Name = character(),
                           Combined = character(),
                           Axis_Type = character(),
-                          Units = character()))  # Add Units here
+                          Units = character()))
+    
+    # Collapse the panel when data is cleared
+    panelCollapsed(TRUE)
   })
   
   #  Download handler for stored data
@@ -1526,30 +2014,101 @@ server <- function(input, output, session) {
     })
   })
   
+  # Function to get the current selected indicator based on active navigation tabs
+  getCurrentIndicator <- reactive({
+    # Get the current dataset
+    dataset <- input$datasetNav
+    
+    # Return the appropriate indicator based on the selected dataset
+    if (dataset == "International Trade") {
+      return(input$internationalTradeNav)
+    } else if (dataset == "Production and Capacity") {
+      return(input$productionCapacityNav)
+    } else if (dataset == "Price Indices") {
+      return(input$priceIndicesNav)
+    } else if (dataset == "Current Employment Statistics") {
+      return(input$employmentStatsNav)
+    } else if (dataset == "M3 Manufacturers Shipments, Inventories & Orders") {
+      return(input$manufacturersNav)
+    } else if (dataset == "Investment") {
+      return(input$investmentNav)
+    }
+    
+    # Default return (should not reach this point)
+    return(NULL)
+  })
+  
+  # Function to get the current selected dataset
+  getCurrentDataset <- reactive({
+    return(input$datasetNav)
+  })
+  
+  # Initialize the selected tabs when the app starts
+  observe({
+    # This runs once when the app initializes
+    # Set default selections for each navigation tab
+    updateTabsetPanel(session, "datasetNav", selected = "International Trade")
+    updateTabsetPanel(session, "internationalTradeNav", selected = "Imports")
+    updateTabsetPanel(session, "productionCapacityNav", selected = "Industrial Production")
+    updateTabsetPanel(session, "priceIndicesNav", selected = "Import Price Index")
+    updateTabsetPanel(session, "employmentStatsNav", selected = "All Employees")
+    updateTabsetPanel(session, "manufacturersNav", selected = "Finished Goods Inventories")
+    updateTabsetPanel(session, "investmentNav", selected = "Structures Investment")
+  })
+  
+  # Update your existing code to use getCurrentDataset() and getCurrentIndicator()
+  # instead of getCurrentDataset() and getCurrentIndicator()
+  
+  # Example: Update your observers
+  observeEvent(c(naicsConstraintCode(), getCurrentIndicator(), input$thematicGroupings), {
+    updatePickerInput(session, "naicsIndex",
+                      choices = unique(filteredNAICS()$index_col),
+                      selected = unique(filteredNAICS()$index_col)[1])
+  })
+  
+  # Update your filteredNAICS reactive
+  filteredNAICS <- reactive({
+    if (input$thematicGroupings != "No Constraint") {
+      data %>%
+        filter(NAICS_Code %in% thematicNAICS(),
+               Indicator == getCurrentIndicator())
+    } else if (naicsConstraintCode() != "") {
+      data %>%
+        filter(str_starts(NAICS_Code, naicsConstraintCode()),
+               Indicator == getCurrentIndicator())
+    } else {
+      data %>%
+        filter(Indicator == getCurrentIndicator())
+    }
+  })
+  
   #  Text output
   output$indicatorDescription <- renderText({
-    if (input$indicatorDropdown == "Industrial Production") {
+    if (getCurrentIndicator() == "Industrial Production") {
       "The G.17 Industrial Production and Capacity Utilization report is a monthly publication by the Federal Reserve Board that produces an index designed to measure the real output of the manufacturing, mining, and electric and gas utilities industries in the United States. It is released monthly at https://www.federalreserve.gov/releases/g17/default.htm . This data is useful for understanding the level and composition of domestic industrial production in the United States. All data are reported as indices initially benchmarked to January 1 2020."
-    } else if (input$indicatorDropdown == "Producer Price Index") {
+    } else if (getCurrentIndicator() == "Producer Price Index") {
       "The Producer Price Index statistics are designed to measure changes in the prices paid for upstream inputs by domestic firms. They are produced monthly by the Bureau of Labor Statistics and can be found at: https://www.bls.gov/mxp/ . This data is useful for understanding changes in the price of input costs for domestic producers. All data are reported as indices initially benchmarked to January 1 2020."
-    } else if (input$indicatorDropdown == "Import Price Index") {
+    } else if (getCurrentIndicator() == "Import Price Index") {
       "The Import Price Index statistics are designed to measure changes in the prices paid for imports by category of good. They are produced monthly by the Bureau of Labor Statistics and can be found at: https://www.bls.gov/mxp/ . This data is useful for understanding changes in the price of foreign-produced goods. All data are reported as indices initially benchmarked to January 1 2020."
-    } else if (input$indicatorDropdown == "Nominal Imports") {
+    } else if (getCurrentIndicator() == "Nominal Imports") {
       "This data is an index of the level of nominal imports, where measures of dollar values are produced by the Census Bureau. New releases can be found monthly at https://usatrade.census.gov/ . This data is useful for understanding changes in the total amount paid from month to month for imports of specific goods. All data are reported as indices initially benchmarked to January 1 2020."
-    } else if (input$indicatorDropdown == "IPI-Adjusted Imports") {
+    } else if (getCurrentIndicator() == "IPI-Adjusted Imports") {
       "This data is compiled specifically for this viewer, using the Census Bureau's data on nominal imports and the Bureau of Labor Statistics data on Import Prices. The index of Nominal Imports is deflated by the index for Import Prices to create an inflation-adjusted index of imports. This index is more accurate than the index of PPI-Adjusted Imports, but at the cost of more limited data coverage. All data are reported as indices initially benchmarked to January 1 2020."
-    } else if (input$indicatorDropdown == "PPI-Adjusted Imports") {
+    } else if (getCurrentIndicator() == "PPI-Adjusted Imports") {
       "This data is compiled specifically for this viewer, using the Census Bureau's data on nominal imports and the Bureau of Labor Statistics data on US Domestic Producer Prices. The index of Nominal Imports is deflated by the index for domestic Producer Prices to create an inflation-adjusted index of imports. This index is less accurate than the index of IPI-Adjusted Imports, but has the benefit of broader data coverage. All data are reported as indices initially benchmarked to January 1 2020."
     } else {
       "No description available for the selected indicator."
     }
   })
   
-  #  Reset inputs to default values
+  # Reset inputs to default values
   observeEvent(input$resetInputs, {
-    updateDateInput(session, "startDate", value = as.Date("2000-01-01"))
-    updateDateInput(session, "endDate", value = Sys.Date())
-    updateDateInput(session, "indexDate", value = as.Date("2020-01-01"))
+    # Update the date range input
+    updateDateRangeInput(session, "dateRange", 
+                         start = as.Date("1900-01-01"),
+                         end = Sys.Date())
+    
+    # Reset filters
     updatePickerInput(session, "thematicGroupings", selected = "No Constraint")
     updatePickerInput(session, "naicsConstraint", selected = "")
     updatePickerInput(session, "naicsIndex", choices = unique(filteredNAICS()$index_col), 
@@ -1558,15 +2117,15 @@ server <- function(input, output, session) {
     updatePickerInput(session, "indicatorDropdown", selected = unique(data$Indicator)[1])
     updateCheckboxInput(session, "showSubIndustries", value = FALSE)
     updateCheckboxInput(session, "showAllSeries", value = FALSE)
+    
+    # Reset transforms
     updateCheckboxInput(session, "useIndexDate", value = FALSE)
-    updateCheckboxInput(session, "useMovingAverage", value = FALSE)
-    updateNumericInput(session, "movingAveragePeriod", value = 1)
-    updateCheckboxInput(session, "usePercentChange", value = FALSE)
-    updateNumericInput(session, "percentChangePeriod", value = 3)
-    updateCheckboxInput(session, "useChange", value = FALSE)
-    updateNumericInput(session, "changePeriod", value = 12)
-    updateCheckboxInput(session, "useCompoundAnnualGrowthRate", value = FALSE)
-    updateNumericInput(session, "compoundAnnualGrowthRatePeriod", value = 12)
+    updateSelectInput(session, "movingAverageTransform", selected = "No Transform")
+    updateSelectInput(session, "changeTransform", selected = "No Transform")
+    updateSelectInput(session, "percentChangeTransform", selected = "No Transform")
+    updateSelectInput(session, "cagrTransform", selected = "No Transform")
+    
+    # Reset visualization settings
     updateNumericInput(session, "xLabelFreq", value = 3)
     updateNumericInput(session, "storedXLabelFreq", value = 3)
   })
