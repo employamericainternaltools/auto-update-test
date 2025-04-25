@@ -18,30 +18,56 @@ current_year <- as.integer(format(Sys.Date(), "%Y"))
 
 
 css <- HTML("
+/* Set the background color for the entire app */
+body {
+  background-color: #edeada;
+}
+
+/* Update container backgrounds to match or complement the new background */
+.container-fluid {
+  background-color: #edeada;
+  padding-left: 30px;
+  padding-right: 30px;
+}
+
 /* Style for the smaller control boxes within panels */
 .control-box {
   background-color: #f5f5f5 !important;  /* Light grey background */
-  border: 1px solid #ddd !important;     /* Light grey border */
+  border: 1px solid #000000 !important;   /* Black border */
   margin: 5px;
   padding: 10px;
 }
 
-/* Make the large well panels blue */
+/* Make the large well panels blue with black borders */
 .well {
-  background-color: #f0f8ff !important;  /* Light blue background */
-  border: 1px solid #add8e6 !important;  /* Blue border */
+  background-color: #f0f8ff !important;  /* Keeping the original light blue background */
+  border: 1px solid #000000 !important;  /* Black border */
 }
 
 /* Override nested wellPanel backgrounds */
 .well .well.control-box {
   background-color: #f5f5f5 !important;  /* Ensure control boxes stay light grey */
-  border: 1px solid #ddd !important;     /* Light grey border */
+  border: 1px solid #000000 !important;  /* Black border */
+}
+
+/* NAICS description box styling */
+.naics-description-box {
+  background-color: #f5f5f5;
+  border: 1px solid #000000; /* Black outline */
+  border-radius: 4px;
+  padding: 8px;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  max-height: 100px;
+  overflow-y: auto;
 }
 
 /* Title panel styling */
 .title-panel {
   padding: 15px 0;
   margin-bottom: 20px;
+  background-color: #edeada;
 }
 
 .title-panel h2 {
@@ -53,18 +79,13 @@ css <- HTML("
 /* Container for sub-navigation */
 #sub-navigation-container {
   margin-top: 0;
-  background-color: #ffffff;
-}
-
-.container-fluid {
-  padding-left: 30px;
-  padding-right: 30px;
+  background-color: #edeada;
 }
 
 /* Main navigation bar styling */
 .main-navbar {
-  background-color: #ffffff;
-  border-bottom: 1px solid #e0e0e0;
+  background-color: #edeada;
+  border-bottom: 1px solid #000000;
   margin-bottom: 0;
   padding: 0;
 }
@@ -83,7 +104,7 @@ css <- HTML("
 
 .main-navbar .nav-tabs > li > a {
   color: #505050;
-  background-color: #ffffff;
+  background-color: #edeada;  /* Match the background color */
   border: none;
   border-radius: 0;
   font-size: 16px;
@@ -110,8 +131,8 @@ css <- HTML("
 
 /* Sub navigation bar styling */
 .sub-navbar {
-  background-color: #ffffff;
-  border-bottom: 1px solid #e6e6e6;
+  background-color: #edeada;
+  border-bottom: 1px solid #000000;
   padding: 0;
   margin-bottom: 20px;
 }
@@ -201,7 +222,7 @@ css <- HTML("
 /* Custom button styling */
 .custom-button {
   background-color: #f8f9fa;
-  border: 1px solid #ddd;
+  border: 1px solid #000000;
   transition: background-color 0.3s;
 }
 
@@ -211,8 +232,8 @@ css <- HTML("
 
 /* Sidebar panel styling */
 .sidebar-panel {
-  background-color: #f0f8ff;
-  border: 1px solid #add8e6;
+  background-color: #f0f8ff;  /* Keeping the original light blue background */
+  border: 1px solid #000000;
   border-radius: 4px;
   margin-bottom: 15px;
   padding: 15px;
@@ -251,7 +272,7 @@ css <- HTML("
 .sidebar-buttons {
   margin-top: 15px;
   padding-top: 15px;
-  border-top: 1px solid #e6e6e6;
+  border-top: 1px solid #000000;
 }
 
 .sidebar-btn {
@@ -263,7 +284,7 @@ css <- HTML("
 /* Chart container styling */
 .chart-container {
   background-color: white;
-  border: 1px solid #ddd;
+  border: 1px solid #000000;
   border-radius: 4px;
   padding: 15px;
   margin-bottom: 20px;
@@ -279,7 +300,7 @@ css <- HTML("
 /* Manager panel styling */
 .manager-panel {
   background-color: #f5f5f5;
-  border: 1px solid #ddd;
+  border: 1px solid #000000;
   border-radius: 4px;
   padding: 15px;
 }
@@ -289,7 +310,7 @@ css <- HTML("
   font-weight: bold;
   margin-bottom: 15px;
   color: #2c3e50;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #000000;
   padding-bottom: 10px;
 }
 
@@ -300,8 +321,8 @@ css <- HTML("
 
 /* Combined panel styling */
 .combined-panel {
-  background-color: #f0f8ff;
-  border: 1px solid #add8e6;
+  background-color: #f0f8ff;  /* Keeping the original light blue background */
+  border: 1px solid #000000;
   border-radius: 4px;
   padding: 15px;
   margin-top: 20px;
@@ -334,7 +355,7 @@ css <- HTML("
 /* Action box styling */
 .action-box {
   background-color: #f5f5f5;
-  border: 1px solid #ddd;
+  border: 1px solid #000000;
   border-radius: 4px;
   padding: 15px;
   height: 100%;
@@ -345,7 +366,7 @@ css <- HTML("
   margin-top: 0;
   margin-bottom: 15px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #000000;
   color: #2c3e50;
 }
 
@@ -365,7 +386,7 @@ css <- HTML("
 /* Data management box styling */
 .data-box {
   background-color: #f5f5f5;
-  border: 1px solid #ddd;
+  border: 1px solid #000000;
   border-radius: 4px;
   padding: 15px;
   height: 100%;
@@ -376,16 +397,16 @@ css <- HTML("
   margin-top: 0;
   margin-bottom: 15px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #000000;
   color: #2c3e50;
 }
 
 /* New styles for the collapsible panel */
 .panel-collapsible {
-  border: 1px solid #add8e6;
+  border: 1px solid #000000;
   border-radius: 4px;
   margin-bottom: 15px;
-  background-color: #f0f8ff;
+  background-color: #f0f8ff;  /* Keeping the original light blue background */
   overflow: hidden;
 }
 
@@ -429,13 +450,119 @@ css <- HTML("
   padding-bottom: 0;
   overflow: hidden;
 }
+
+/* Copy button styling */
+.copy-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 5px;
+  color: #555;
+  transition: color 0.3s;
+}
+.copy-btn:hover {
+  color: #2470dc;
+}
+.chart-code-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+.chart-code-text {
+  flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Flash animation for copy confirmation */
+@keyframes flash {
+  0% { background-color: transparent; }
+  30% { background-color: rgba(36, 112, 220, 0.2); }
+  100% { background-color: transparent; }
+}
+.flash {
+  animation: flash 1s;
+}
 ")
 
 # UI Section
 ui <- fluidPage(
   tags$head(
     tags$style(css),
+    tags$style(HTML("
+    .copy-btn {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      padding: 0;
+      margin-left: 5px;
+      color: #555;
+      transition: color 0.3s;
+    }
+    .copy-btn:hover {
+      color: #2470dc;
+    }
+    .chart-code-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+    .chart-code-text {
+      flex-grow: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    /* Flash animation for copy confirmation */
+    @keyframes flash {
+      0% { background-color: transparent; }
+      30% { background-color: rgba(36, 112, 220, 0.2); }
+      100% { background-color: transparent; }
+    }
+    .flash {
+      animation: flash 1s;
+    }
+  ")),
     tags$script(HTML("
+    $(document).ready(function() {
+    $('#naicsIndex').on('show.bs.select', function () {
+      Shiny.setInputValue('naicsIndex_open', Math.random(), {priority: 'event'});
+    });
+  });
+  $(document).ready(function() {
+      // Function to copy text to clipboard
+      function copyToClipboard(text, buttonId) {
+        // Create temporary element
+        var tempInput = document.createElement('textarea');
+        tempInput.value = text;
+        document.body.appendChild(tempInput);
+        
+        // Select the text
+        tempInput.select();
+        tempInput.setSelectionRange(0, 99999); // For mobile devices
+        
+        // Copy the text
+        document.execCommand('copy');
+        
+        // Remove temporary element
+        document.body.removeChild(tempInput);
+        
+        // Flash animation on the container
+        $('#' + buttonId).closest('.chart-code-container').addClass('flash');
+        setTimeout(function() {
+          $('#' + buttonId).closest('.chart-code-container').removeClass('flash');
+        }, 1000);
+      }
+      
+      // Add click event to copy button
+      $(document).on('click', '#copyChartCodeBtn', function() {
+        var chartCode = $('#globalParameterID').text();
+        copyToClipboard(chartCode, 'copyChartCodeBtn');
+      });
+    });
       $(document).ready(function() {
         // Make both the header and icon clickable for toggle
         $('#panel-header').click(function(e) {
@@ -461,12 +588,6 @@ ui <- fluidPage(
         });
       });
     "))
-  ),
-  
-  div(class = "title-panel",
-      div(class = "container-fluid",
-          h2("Sectoral Economic Data Tool")
-      )
   ),
   
   # Main Navigation Bar (Dataset Categories)
@@ -622,18 +743,23 @@ ui <- fluidPage(
                    ),
                    div(class = "sidebar-col-6",
                        pickerInput("naicsConstraint", "NAICS Code Constraint",
-                                   choices = c("No Constraint", "", unique(data$index_col[grepl("^\\d{3}\\b", data$NAICS_Code)])),
+                                   choices = c("No Constraint", unique(data$index_col[grepl("^\\d{3}\\b", data$NAICS_Code)])),
                                    options = list(`live-search` = TRUE))
                    )
                ),
                
-               # NAICS selection - Full width
+               # NAICS selection - Full width with description box below
                div(class = "sidebar-row",
                    div(class = "sidebar-col-12",
                        pickerInput("naicsIndex", "Select NAICS Code:",
                                    choices = NULL,
                                    selected = NULL,
                                    options = list(`live-search` = TRUE))
+                   ),
+                   div(class = "sidebar-col-12",
+                       div(class = "naics-description-box",
+                           textOutput("naicsDescription")
+                       )
                    )
                ),
                
@@ -703,6 +829,31 @@ ui <- fluidPage(
                                         class = "sidebar-btn custom-button")
                        )
                    )
+               ),
+               # Parameter IDs box
+               div(class = "sidebar-row",
+                   div(class = "sidebar-col-12",
+                       wellPanel(
+                         style = "margin-top: 15px; padding: 10px;",
+                         div(id = "globalParameterIDDisplay",
+                             h4("Chart Code", style = "margin-top: 0; margin-bottom: 10px;"),
+                             # New container for text output and copy button
+                             div(class = "chart-code-container",
+                                 div(class = "chart-code-text", textOutput("globalParameterID")),
+                                 # Copy button with icon
+                                 tags$button(
+                                   id = "copyChartCodeBtn",
+                                   class = "copy-btn",
+                                   title = "Copy to clipboard",
+                                   icon("copy")
+                                 )
+                             ),
+                             textInput("globalParameterIdInput", "Enter Chart Code:", ""),
+                             actionButton("applyGlobalParameterId", "Apply Global ID", 
+                                          class = "sidebar-btn custom-button")
+                         )
+                       )
+                   )
                )
            )
     ),
@@ -711,7 +862,6 @@ ui <- fluidPage(
     column(width = 9,
            # First chart - Data Finder
            div(class = "chart-container",
-               div(class = "chart-title", "Data Finder"),
                plotlyOutput("lineChart", height = "600px")
            )
     )
@@ -843,6 +993,982 @@ ui <- fluidPage(
 # Define server logic
 server <- function(input, output, session) {
   
+  # Add a click observer for the NAICS dropdown
+  observeEvent(input$naicsIndex_open, {
+    # Skip if we're currently applying a chart code
+    if(applyingChartCode()) {
+      return()
+    }
+    
+    # Get current filtered NAICS choices
+    new_choices <- unique(filteredNAICS()$index_col)
+    
+    # Keep current selection if it exists in new choices
+    current_selection <- input$naicsIndex
+    selected_value <- if(!is.null(current_selection) && current_selection %in% new_choices) {
+      current_selection
+    } else {
+      new_choices[1]
+    }
+    
+    # Update dropdown with new options
+    updatePickerInput(session, "naicsIndex",
+                      choices = new_choices,
+                      selected = selected_value)
+  }, ignoreInit = TRUE)
+  
+  datasetCode <- reactiveVal(NA)
+  indicatorCode <- reactiveVal(NA)
+  movingAverageCode <- reactiveVal(NA)
+  changeCode <- reactiveVal(NA)
+  percentChangeCode <- reactiveVal(NA)
+  cagrCode <- reactiveVal(NA)
+  subIndustriesCode <- reactiveVal(NA)
+  seasonalAdjustmentCode <- reactiveVal(NA)
+  indexToDateCode <- reactiveVal(NA)
+  indexDateCode <- reactiveVal(NA)
+  naicsCode <- reactiveVal(NA)
+  
+  # First, let's add numeric IDs for datasets and indicators
+  
+  # In the server function, define numeric IDs for datasets
+  datasetIDs <- reactiveVal(list(
+    "International Trade" = 1,
+    "Production and Capacity" = 2,
+    "Price Indices" = 3,
+    "Current Employment Statistics" = 4,
+    "M3 Manufacturers Shipments, Inventories & Orders" = 5,
+    "Investment" = 6
+  ))
+  
+  # Define a reactive function to map dataset IDs to indicator IDs
+  indicatorIDsByDataset <- reactive({
+    list(
+      # Dataset 1: International Trade
+      "1" = list(
+        "Imports" = 1,
+        "Exports" = 2,
+        "PPI-Deflated Imports" = 3,
+        "IPI-Deflated Imports" = 4,
+        "PPI-Adjusted Exports" = 5,
+        "EPI-Adjusted Exports" = 6
+      ),
+      # Dataset 2: Production and Capacity
+      "2" = list(
+        "Industrial Production" = 1,
+        "Capacity Utilization" = 2,
+        "Capacity" = 3,
+        "Relative Importance Weights" = 4
+      ),
+      # Dataset 3: Price Indices
+      "3" = list(
+        "Import Price Index" = 1,
+        "Export Price Index" = 2,
+        "Producer Price Index" = 3
+      ),
+      # Dataset 4: Current Employment Statistics
+      "4" = list(
+        "All Employees" = 1,
+        "Women Employees" = 2,
+        "Average Hourly Earnings of All Employees" = 3,
+        "Average Weekly Hours of All Employees" = 4
+      ),
+      # Dataset 5: M3 Manufacturers
+      "5" = list(
+        "Finished Goods Inventories" = 1,
+        "Inventories to Shipments Ratio" = 2,
+        "Material and Supply Inventories" = 3,
+        "Total Inventories" = 4,
+        "Unfilled Orders" = 5,
+        "Unfilled Orders to Shipments Ratios" = 6,
+        "Value of Shipments" = 7,
+        "Work in Process Inventories" = 8,
+        "New Orders" = 9
+      ),
+      # Dataset 6: Investment
+      "6" = list(
+        "Structures Investment" = 1,
+        "Real Structures Investment" = 2,
+        "Equipment Investment" = 3,
+        "Real Equipment Investment" = 4
+      )
+    )
+  })
+  
+  # Add these to your server function, with the other ID outputs
+  # Output the current Dataset ID
+  output$datasetID <- renderText({
+    # Get the current selected dataset
+    selected <- input$datasetNav
+    # Look up its numeric ID
+    id <- datasetIDs()[[selected]]
+    # Return as string
+    as.character(id)
+  })
+  
+  # Add these to your server, with the other input observers
+  # Update the dataset dropdown when the numeric input changes
+  observeEvent(datasetCode(), {
+    # Skip if the value is NA or NULL
+    req(datasetCode())
+    
+    # Get the numeric ID input by the user
+    user_id <- datasetCode()
+    
+    # Get the list of IDs
+    ids <- datasetIDs()
+    
+    # Find the dataset name corresponding to this ID
+    dataset_name <- names(ids)[which(unlist(ids) == user_id)]
+    
+    # If a valid dataset was found, update the dropdown
+    if (length(dataset_name) > 0) {
+      updateTabsetPanel(session, "datasetNav", selected = dataset_name)
+      
+      # Clear the input box after making the selection (with a slight delay)
+      invalidateLater(300)
+      isolate({
+        datasetCode(NA)
+      })
+    }
+  })
+  
+  # Update the indicator dropdown when the numeric input changes
+  observeEvent(indicatorCode(), {
+    # Skip if the value is NA or NULL
+    req(indicatorCode())
+    
+    # Get the numeric ID input by the user
+    user_id <- indicatorCode()
+    
+    # Get the current dataset and its ID
+    selected_dataset <- input$datasetNav
+    dataset_id <- datasetIDs()[[selected_dataset]]
+    
+    # Get the indicator IDs for this dataset
+    indicator_ids_list <- indicatorIDsByDataset()[[as.character(dataset_id)]]
+    
+    # Find the indicator name corresponding to this ID
+    indicator_name <- names(indicator_ids_list)[which(unlist(indicator_ids_list) == user_id)]
+    
+    # If a valid indicator was found, update the appropriate tab panel
+    if (length(indicator_name) > 0) {
+      # Determine which tabset panel to update based on the dataset
+      if (selected_dataset == "International Trade") {
+        updateTabsetPanel(session, "internationalTradeNav", selected = indicator_name)
+      } else if (selected_dataset == "Production and Capacity") {
+        updateTabsetPanel(session, "productionCapacityNav", selected = indicator_name)
+      } else if (selected_dataset == "Price Indices") {
+        updateTabsetPanel(session, "priceIndicesNav", selected = indicator_name)
+      } else if (selected_dataset == "Current Employment Statistics") {
+        updateTabsetPanel(session, "employmentStatsNav", selected = indicator_name)
+      } else if (selected_dataset == "M3 Manufacturers Shipments, Inventories & Orders") {
+        updateTabsetPanel(session, "manufacturersNav", selected = indicator_name)
+      } else if (selected_dataset == "Investment") {
+        updateTabsetPanel(session, "investmentNav", selected = indicator_name)
+      }
+      
+      # Clear the input box after making the selection
+      invalidateLater(300)
+      isolate({
+        indicatorCode(NA)
+      })
+    }
+  })
+  
+  # Output the current Indicator ID
+  output$indicatorID <- renderText({
+    # Get the current selected dataset and indicator
+    selected_dataset <- input$datasetNav
+    selected_indicator <- getCurrentIndicator()
+    
+    # Get the dataset ID
+    dataset_id <- datasetIDs()[[selected_dataset]]
+    
+    # Get the indicator IDs for this dataset
+    indicator_ids_list <- indicatorIDsByDataset()[[as.character(dataset_id)]]
+    
+    # Look up the indicator's numeric ID
+    id <- indicator_ids_list[[selected_indicator]]
+    
+    # Return as string
+    as.character(id)
+  })
+  
+  # Add these reactive values at the top of your server function
+  chartCodeStep <- reactiveVal(0)  # Controls which step we're on
+  chartCodeParams <- reactiveVal(NULL)  # Stores the parsed parameters
+  
+  # Add a debug logger
+  logStep <- function(step_name) {
+    message(paste0("CHART CODE STEP: ", step_name))
+  }
+  
+  # Replace your Apply Global ID observer with this step-based approach
+  observeEvent(input$applyGlobalParameterId, {
+    # Reset step counter to start the process
+    chartCodeStep(1)
+    logStep("1 - Starting Chart Code application process")
+    
+    # Get the input string
+    global_id <- input$globalParameterIdInput
+    
+    # Check if the string is of reasonable length
+    if (nchar(global_id) < 10) {
+      showNotification("Chart Code appears too short", type = "error")
+      chartCodeStep(0)  # Reset step counter on error
+      return()
+    }
+    
+    # Set flag to prevent NAICS dropdown updates during code application
+    applyingChartCode(TRUE)
+    
+    # Parse the string into components
+    params <- list(
+      dataset_id = as.numeric(substr(global_id, 1, 1)),
+      indicator_id = as.numeric(substr(global_id, 2, 2)),
+      ma_id = as.numeric(substr(global_id, 3, 3)),
+      change_id = as.numeric(substr(global_id, 4, 4)),
+      percent_change_id = as.numeric(substr(global_id, 5, 5)),
+      cagr_id = as.numeric(substr(global_id, 6, 6)),
+      sub_industries = as.logical(as.numeric(substr(global_id, 7, 7))),
+      seasonal_adjustment = as.logical(as.numeric(substr(global_id, 8, 8))),
+      index_to_date = as.logical(as.numeric(substr(global_id, 9, 9))),
+      index_date = substr(global_id, 10, 15),
+      naics_code = substr(global_id, 16, 21)
+    )
+    
+    # Store parsed parameters for later steps
+    chartCodeParams(params)
+    
+    # Step 1: Reset constraints
+    updatePickerInput(session, "thematicGroupings", selected = "No Constraint")
+    updatePickerInput(session, "naicsConstraint", selected = "No Constraint")
+    
+    # Move to Step 2
+    chartCodeStep(2)
+  })
+  
+  # At the top of your server function, add these new reactive values
+  chartCodeSubStep <- reactiveVal(0)  # For tracking sub-steps within a step
+  naicsOptionsReady <- reactiveVal(FALSE)  # Flag to indicate when NAICS options are ready
+  
+  # Replace your step 2 observer with this
+  observeEvent(chartCodeStep(), {
+    if (chartCodeStep() == 2) {
+      logStep("2 - Applying dataset, indicator and transformation parameters")
+      
+      # Reset sub-step counter and ready flag
+      chartCodeSubStep(1)
+      naicsOptionsReady(FALSE)
+      
+      # Get stored parameters
+      params <- chartCodeParams()
+      if (is.null(params)) {
+        chartCodeStep(0)  # Reset on error
+        applyingChartCode(FALSE)
+        return()
+      }
+      
+      # 2.1: Apply dataset parameter
+      ids_list <- datasetIDs()
+      dataset_name <- names(ids_list)[which(unlist(ids_list) == params$dataset_id)]
+      
+      if (length(dataset_name) > 0) {
+        updateTabsetPanel(session, "datasetNav", selected = dataset_name)
+      } else {
+        message("Invalid dataset_id: ", params$dataset_id)
+      }
+      
+      # 2.2: Apply indicator parameter (based on dataset)
+      indicator_ids_list <- indicatorIDsByDataset()[[as.character(params$dataset_id)]]
+      if (!is.null(indicator_ids_list)) {
+        indicator_name <- names(indicator_ids_list)[which(unlist(indicator_ids_list) == params$indicator_id)]
+        
+        if (length(indicator_name) > 0) {
+          # Select appropriate tab panel based on dataset
+          if (dataset_name == "International Trade") {
+            updateTabsetPanel(session, "internationalTradeNav", selected = indicator_name)
+          } else if (dataset_name == "Production and Capacity") {
+            updateTabsetPanel(session, "productionCapacityNav", selected = indicator_name)
+          } else if (dataset_name == "Price Indices") {
+            updateTabsetPanel(session, "priceIndicesNav", selected = indicator_name)
+          } else if (dataset_name == "Current Employment Statistics") {
+            updateTabsetPanel(session, "employmentStatsNav", selected = indicator_name)
+          } else if (dataset_name == "M3 Manufacturers Shipments, Inventories & Orders") {
+            updateTabsetPanel(session, "manufacturersNav", selected = indicator_name)
+          } else if (dataset_name == "Investment") {
+            updateTabsetPanel(session, "investmentNav", selected = indicator_name)
+          }
+        } else {
+          message("Invalid indicator_id: ", params$indicator_id)
+        }
+      }
+      
+      # 2.3: Apply transformation parameters
+      # Moving Average
+      ma_choices <- names(movingAverageIDs())
+      if (params$ma_id >= 0 && params$ma_id < length(ma_choices)) {
+        updateSelectInput(session, "movingAverageTransform", selected = ma_choices[params$ma_id + 1])
+      }
+      
+      # Change
+      change_choices <- names(changeIDs())
+      if (params$change_id >= 0 && params$change_id < length(change_choices)) {
+        updateSelectInput(session, "changeTransform", selected = change_choices[params$change_id + 1])
+      }
+      
+      # Percent Change
+      pct_change_choices <- names(percentChangeIDs())
+      if (params$percent_change_id >= 0 && params$percent_change_id < length(pct_change_choices)) {
+        updateSelectInput(session, "percentChangeTransform", selected = pct_change_choices[params$percent_change_id + 1])
+      }
+      
+      # CAGR
+      cagr_choices <- names(cagrIDs())
+      if (params$cagr_id >= 0 && params$cagr_id < length(cagr_choices)) {
+        updateSelectInput(session, "cagrTransform", selected = cagr_choices[params$cagr_id + 1])
+      }
+      
+      # Checkboxes
+      updateCheckboxInput(session, "showSubIndustries", value = params$sub_industries)
+      updateCheckboxInput(session, "useSeasonalAdjustment", value = params$seasonal_adjustment)
+      updateCheckboxInput(session, "useIndexDate", value = params$index_to_date)
+      
+      # Index Date
+      if (nchar(params$index_date) == 6) {
+        year <- as.numeric(substr(params$index_date, 1, 4))
+        month <- as.numeric(substr(params$index_date, 5, 6))
+        
+        if (!is.na(year) && !is.na(month) && year >= 1900 && year <= 2100 && month >= 1 && month <= 12) {
+          date_str <- sprintf("%04d-%02d-01", year, month)
+          updateDateInput(session, "indexDate", value = as.Date(date_str))
+        }
+      }
+      
+      # Move to the next sub-step to check if inputs have changed
+      message("Step 2 complete, moving to sub-step monitoring")
+      chartCodeSubStep(2)
+    }
+  })
+  
+  # Add a NEW observer that monitors input changes after step 2
+  observeEvent(chartCodeSubStep(), {
+    if (chartCodeSubStep() == 2) {
+      message("Sub-step 2: Monitoring input changes...")
+      
+      # Get current dataset and indicator to watch for changes
+      params <- chartCodeParams()
+      if (is.null(params)) return()
+      
+      # Create reactive expressions that will be triggered when dataset/indicator changes
+      dataset_expr <- reactive({
+        input$datasetNav
+      })
+      
+      indicator_expr <- reactive({
+        getCurrentIndicator()
+      })
+      
+      # Add observer to monitor when these inputs match what we expect
+      observe({
+        current_dataset <- dataset_expr()
+        current_indicator <- indicator_expr()
+        
+        # Get the expected values from our params
+        expected_dataset <- names(datasetIDs())[which(unlist(datasetIDs()) == params$dataset_id)]
+        indicator_ids_list <- indicatorIDsByDataset()[[as.character(params$dataset_id)]]
+        expected_indicator <- names(indicator_ids_list)[which(unlist(indicator_ids_list) == params$indicator_id)]
+        
+        # Check if we've reached the expected state
+        if (length(expected_dataset) > 0 && length(expected_indicator) > 0) {
+          if (current_dataset == expected_dataset && current_indicator == expected_indicator) {
+            message("Dataset and indicator match expected values:")
+            message("  Dataset: ", current_dataset)
+            message("  Indicator: ", current_indicator)
+            
+            # IMPORTANT: Let's check the NAICS options now
+            options_count <- length(unique(filteredNAICS()$index_col))
+            message("  NAICS options count: ", options_count)
+            
+            # If we've got a reasonable number of options, we're ready to move on
+            if (options_count > 0) {
+              message("NAICS options are available, marking as ready")
+              naicsOptionsReady(TRUE)
+              chartCodeSubStep(3)  # Move to next sub-step
+            } else {
+              message("No NAICS options available yet, waiting...")
+            }
+          } else {
+            message("Still waiting for dataset and indicator to update:")
+            message("  Current dataset: ", current_dataset, " (expecting ", expected_dataset, ")")
+            message("  Current indicator: ", current_indicator, " (expecting ", expected_indicator, ")")
+          }
+        }
+      })
+    }
+    
+    # Once we're ready, update the NAICS dropdown
+    if (chartCodeSubStep() == 3 && naicsOptionsReady()) {
+      message("Sub-step 3: NAICS options are ready, updating dropdown")
+      
+      # Get the current filtered NAICS options
+      current_filtered_naics <- unique(filteredNAICS()$index_col)
+      message("Found ", length(current_filtered_naics), " NAICS options")
+      
+      # Update the dropdown with these options
+      updatePickerInput(session, "naicsIndex", choices = current_filtered_naics)
+      
+      # Now move to step 2.5
+      chartCodeStep(2.5)
+    }
+  })
+  
+  # Step 2.5: Update NAICS dropdown options
+  observeEvent(chartCodeStep(), {
+    if (chartCodeStep() == 2.5) {
+      logStep("2.5 - Updating NAICS dropdown options")
+      
+      # Get the current filtered NAICS options
+      current_filtered_naics <- unique(filteredNAICS()$index_col)
+      message("Available NAICS options after filtering: ", 
+              paste(head(current_filtered_naics, 5), collapse=", "), 
+              "... (", length(current_filtered_naics), " total)")
+      
+      # Update the dropdown with these options
+      updatePickerInput(session, "naicsIndex", choices = current_filtered_naics)
+      
+      # Wait for the UI update to complete before moving to Step 3
+      session$onFlushed(function() {
+        message("NAICS dropdown updated, proceeding to matching step")
+        # Now move to Step 3 after the UI has been updated
+        chartCodeStep(3)
+      })
+    }
+  })
+  
+  # Step 3: Apply NAICS code and finalize
+  observeEvent(chartCodeStep(), {
+    if (chartCodeStep() == 3) {
+      logStep("3 - Applying NAICS code and finalizing")
+      
+      # Get stored parameters
+      params <- chartCodeParams()
+      if (is.null(params)) {
+        chartCodeStep(0)  # Reset on error
+        applyingChartCode(FALSE)
+        return()
+      }
+      
+      # 3.1: Apply NAICS code
+      # Now that all other parameters have been applied and processed,
+      # we can set the NAICS code based on the filtered options
+      target_naics_code <- params$naics_code
+      message("Trying to apply NAICS code: ", target_naics_code)
+      
+      # Get current available options after all filters have been applied
+      naics_options <- unique(filteredNAICS()$index_col)
+      
+      # Try to find a match
+      found_match <- FALSE
+      for (option in naics_options) {
+        option_code <- regmatches(option, regexpr("^\\d{1,6}", option))
+        if (length(option_code) > 0 && option_code != "") {
+          padded_option_code <- sprintf("%06d", as.numeric(option_code))
+          if (padded_option_code == target_naics_code) {
+            message("Found matching NAICS option: ", option)
+            updatePickerInput(session, "naicsIndex", selected = option)
+            found_match <- TRUE
+            break
+          }
+        }
+      }
+      
+      if (!found_match) {
+        message("No matching NAICS code found for: ", target_naics_code)
+        # Consider showing a notification to the user that the NAICS code couldn't be found
+        showNotification(paste("NAICS code", target_naics_code, "not found in available options"), 
+                         type = "warning")
+      }
+      
+      # 3.2: Show success notification
+      showNotification("Chart Code applied successfully", type = "message")
+      
+      # 3.3: Clear the input field
+      updateTextInput(session, "globalParameterIdInput", value = "")
+      
+      # Reset step counter and allow normal UI updates again
+      chartCodeStep(0)
+      applyingChartCode(FALSE)
+    }
+  })
+  
+  
+  
+  # Function to standardize NAICS code to 6 digits with leading zeros
+  standardizeNaicsCode <- function(naics_digits) {
+    # Convert to character and pad with leading zeros to 6 digits
+    if (is.na(naics_digits)) return(NA)
+    return(sprintf("%06d", as.numeric(naics_digits)))
+  }
+  
+  # Extract and standardize NAICS code digits from the display string
+  extractNaicsDigits <- function(naics_string) {
+    # Extract just the digits at the beginning of the string
+    naics_digits <- regmatches(naics_string, regexpr("^\\d{1,6}", naics_string))
+    
+    # If we found digits, standardize to 6 digits, otherwise return NA
+    if (length(naics_digits) > 0 && naics_digits != "") {
+      return(standardizeNaicsCode(as.numeric(naics_digits)))
+    } else {
+      return(NA)
+    }
+  }
+  
+  # Define numeric IDs for Moving Average options
+  movingAverageIDs <- reactiveVal(list(
+    "No Transform" = 0,
+    "3 Months" = 1,
+    "6 Months" = 2,
+    "12 Months" = 3,
+    "18 Months" = 4,
+    "36 Months" = 5
+  ))
+  
+  # Define numeric IDs for Change options
+  changeIDs <- reactiveVal(list(
+    "No Transform" = 0,
+    "1 Month" = 1,
+    "3 Months" = 2,
+    "6 Months" = 3,
+    "12 Months" = 4,
+    "18 Months" = 5,
+    "36 Months" = 6
+  ))
+  
+  # Define numeric IDs for Percent Change options
+  percentChangeIDs <- reactiveVal(list(
+    "No Transform" = 0,
+    "1 Month" = 1,
+    "3 Months" = 2,
+    "6 Months" = 3,
+    "12 Months" = 4,
+    "18 Months" = 5,
+    "36 Months" = 6
+  ))
+  
+  # Define numeric IDs for CAGR options
+  cagrIDs <- reactiveVal(list(
+    "No Transform" = 0,
+    "1 Month" = 1,
+    "3 Months" = 2,
+    "6 Months" = 3,
+    "12 Months" = 4,
+    "18 Months" = 5,
+    "36 Months" = 6
+  ))
+  
+  # Output the current Moving Average ID
+  output$movingAverageID <- renderText({
+    # Get the current selected value
+    selected <- input$movingAverageTransform
+    # Look up its numeric ID
+    id <- movingAverageIDs()[[selected]]
+    # Return as string
+    as.character(id)
+  })
+  
+  # Output the current Change ID
+  output$changeID <- renderText({
+    # Get the current selected value
+    selected <- input$changeTransform
+    # Look up its numeric ID
+    id <- changeIDs()[[selected]]
+    # Return as string
+    as.character(id)
+  })
+  
+  # Output the current Percent Change ID
+  output$percentChangeID <- renderText({
+    # Get the current selected value
+    selected <- input$percentChangeTransform
+    # Look up its numeric ID
+    id <- percentChangeIDs()[[selected]]
+    # Return as string
+    as.character(id)
+  })
+  
+  # Output the current CAGR ID
+  output$cagrID <- renderText({
+    # Get the current selected value
+    selected <- input$cagrTransform
+    # Look up its numeric ID
+    id <- cagrIDs()[[selected]]
+    # Return as string
+    as.character(id)
+  })
+  
+  # Output the current Show Sub-Industries ID (binary 0/1)
+  output$subIndustriesID <- renderText({
+    as.character(as.integer(input$showSubIndustries))
+  })
+  
+  # Output the current Seasonal Adjustment ID (binary 0/1)
+  output$seasonalAdjustmentID <- renderText({
+    as.character(as.integer(input$useSeasonalAdjustment))
+  })
+  
+  # Output the current Index to Date ID (binary 0/1)
+  output$indexToDateID <- renderText({
+    as.character(as.integer(input$useIndexDate))
+  })
+  
+  # Output the current Index Date ID (as YYYYMM)
+  output$indexDateID <- renderText({
+    # Get the current selected date
+    selected_date <- input$indexDate
+    
+    # Format as YYYYMM
+    date_id <- format(selected_date, "%Y%m")
+    
+    # Return as string
+    return(date_id)
+  })
+  
+  # Output the standardized NAICS Code ID
+  output$naicsCodeID <- renderText({
+    # Get the current selected value
+    selected <- input$naicsIndex
+    
+    # Extract and standardize the NAICS code digits
+    naics_digits <- extractNaicsDigits(selected)
+    
+    # Return as string
+    if (!is.na(naics_digits)) {
+      return(naics_digits)  # Already standardized with leading zeros
+    } else {
+      return("000000")  # Default value if no code found
+    }
+  })
+  
+  # Update the global parameter ID output
+  output$globalParameterID <- renderText({
+    # Get the dataset ID
+    dataset_id <- as.character(datasetIDs()[[input$datasetNav]])
+    
+    # Get the indicator ID
+    selected_dataset <- input$datasetNav
+    selected_indicator <- getCurrentIndicator()
+    dataset_id_num <- datasetIDs()[[selected_dataset]]
+    indicator_ids_list <- indicatorIDsByDataset()[[as.character(dataset_id_num)]]
+    indicator_id <- as.character(indicator_ids_list[[selected_indicator]])
+    
+    # Get values from all individual parameters
+    ma_id <- as.character(movingAverageIDs()[[input$movingAverageTransform]])
+    change_id <- as.character(changeIDs()[[input$changeTransform]])
+    percent_change_id <- as.character(percentChangeIDs()[[input$percentChangeTransform]])
+    cagr_id <- as.character(cagrIDs()[[input$cagrTransform]])
+    show_sub_industries <- as.character(as.integer(input$showSubIndustries))
+    seasonal_adjustment <- as.character(as.integer(input$useSeasonalAdjustment))
+    index_to_date <- as.character(as.integer(input$useIndexDate))
+    
+    # Format date as YYYYMM
+    index_date <- format(input$indexDate, "%Y%m")
+    
+    # Get NAICS code
+    naics_code <- extractNaicsDigits(input$naicsIndex)
+    if (is.na(naics_code)) naics_code <- "000000"
+    
+    # Concatenate all values into a single string, now starting with dataset and indicator IDs
+    global_id <- paste0(
+      dataset_id,
+      indicator_id,
+      ma_id,
+      change_id,
+      percent_change_id,
+      cagr_id,
+      show_sub_industries,
+      seasonal_adjustment,
+      index_to_date,
+      index_date,
+      naics_code
+    )
+    
+    return(global_id)
+  })
+  
+  # Update the dropdown when the Moving Average numeric input changes
+  observeEvent(movingAverageCode(), {
+    # Skip if the value is NA or NULL
+    req(movingAverageCode())
+    
+    # Get the numeric ID input by the user
+    user_id <- movingAverageCode()
+    
+    # Get the list of IDs
+    ids <- movingAverageIDs()
+    
+    # Find the option name corresponding to this ID
+    option_name <- names(ids)[which(unlist(ids) == user_id)]
+    
+    # If a valid option was found, update the dropdown
+    if (length(option_name) > 0) {
+      updateSelectInput(session, "movingAverageTransform", selected = option_name)
+      
+      # Clear the input box after making the selection (with a slight delay)
+      invalidateLater(300)
+      isolate({
+        movingAverageCode(NA)
+      })
+    }
+  })
+  
+  # Update the dropdown when the Change numeric input changes
+  observeEvent(changeCode(), {
+    # Skip if the value is NA or NULL
+    req(changeCode())
+    
+    # Get the numeric ID input by the user
+    user_id <- changeCode()
+    
+    # Get the list of IDs
+    ids <- changeIDs()
+    
+    # Find the option name corresponding to this ID
+    option_name <- names(ids)[which(unlist(ids) == user_id)]
+    
+    # If a valid option was found, update the dropdown
+    if (length(option_name) > 0) {
+      updateSelectInput(session, "changeTransform", selected = option_name)
+      
+      # Clear the input box after making the selection (with a slight delay)
+      invalidateLater(300)
+      isolate({
+        changeCode(NA)
+      })
+    }
+  })
+  
+  # Update the dropdown when the Percent Change numeric input changes
+  observeEvent(percentChangeCode(), {
+    # Skip if the value is NA or NULL
+    req(percentChangeCode())
+    
+    # Get the numeric ID input by the user
+    user_id <- percentChangeCode()
+    
+    # Get the list of IDs
+    ids <- percentChangeIDs()
+    
+    # Find the option name corresponding to this ID
+    option_name <- names(ids)[which(unlist(ids) == user_id)]
+    
+    # If a valid option was found, update the dropdown
+    if (length(option_name) > 0) {
+      updateSelectInput(session, "percentChangeTransform", selected = option_name)
+      
+      # Clear the input box after making the selection (with a slight delay)
+      invalidateLater(300)
+      isolate({
+        percentChangeCode(NA)
+      })
+    }
+  })
+  
+  # Update the dropdown when the CAGR numeric input changes
+  observeEvent(cagrCode(), {
+    # Skip if the value is NA or NULL
+    req(cagrCode())
+    
+    # Get the numeric ID input by the user
+    user_id <- cagrCode()
+    
+    # Get the list of IDs
+    ids <- cagrIDs()
+    
+    # Find the option name corresponding to this ID
+    option_name <- names(ids)[which(unlist(ids) == user_id)]
+    
+    # If a valid option was found, update the dropdown
+    if (length(option_name) > 0) {
+      updateSelectInput(session, "cagrTransform", selected = option_name)
+      
+      # Clear the input box after making the selection (with a slight delay)
+      invalidateLater(300)
+      isolate({
+        cagrCode(NA)
+      })
+    }
+  })
+  
+  # Update the Show Sub-Industries checkbox when the numeric input changes
+  observeEvent(subIndustriesCode(), {
+    # Skip if the value is NA or NULL
+    req(subIndustriesCode())
+    
+    # Convert to logical (0 = FALSE, 1 = TRUE)
+    value <- as.logical(subIndustriesCode())
+    
+    # Update the checkbox
+    updateCheckboxInput(session, "showSubIndustries", value = value)
+    
+    # Clear the input box after making the selection
+    invalidateLater(300)
+    isolate({
+      subIndustriesCode(NA)
+    })
+  })
+  
+  # Update the Seasonal Adjustment checkbox when the numeric input changes
+  observeEvent(seasonalAdjustmentCode(), {
+    # Skip if the value is NA or NULL
+    req(seasonalAdjustmentCode())
+    
+    # Convert to logical (0 = FALSE, 1 = TRUE)
+    value <- as.logical(seasonalAdjustmentCode())
+    
+    # Update the checkbox
+    updateCheckboxInput(session, "useSeasonalAdjustment", value = value)
+    
+    # Clear the input box after making the selection
+    invalidateLater(300)
+    isolate({
+      seasonalAdjustmentCode(NA)
+    })
+  })
+  
+  # Update the Index to Date checkbox when the numeric input changes
+  observeEvent(indexToDateCode(), {
+    # Skip if the value is NA or NULL
+    req(indexToDateCode())
+    
+    # Convert to logical (0 = FALSE, 1 = TRUE)
+    value <- as.logical(indexToDateCode())
+    
+    # Update the checkbox
+    updateCheckboxInput(session, "useIndexDate", value = value)
+    
+    # Clear the input box after making the selection
+    invalidateLater(300)
+    isolate({
+      indexToDateCode(NA)
+    })
+  })
+  
+  # Update the Index Date when the numeric input changes
+  observeEvent(indexDateCode(), {
+    # Skip if the value is NA or NULL
+    req(indexDateCode())
+    
+    # Get the numeric ID input by the user
+    user_id <- indexDateCode()
+    
+    # Convert to a date string
+    # Extract year and month from the numeric input
+    year <- floor(user_id / 100)
+    month <- user_id %% 100
+    
+    # Validate month (1-12)
+    if (month >= 1 && month <= 12) {
+      # Create a date string
+      date_str <- sprintf("%04d-%02d-01", year, month)
+      date_obj <- as.Date(date_str)
+      
+      # Update the date input
+      updateDateInput(session, "indexDate", value = date_obj)
+    }
+    
+    # Clear the input box after making the selection
+    invalidateLater(300)
+    isolate({
+      indexDateCode(NA)
+    })
+  })
+  
+  # Update the NAICS dropdown when the numeric input changes
+  observeEvent(naicsCode(), {
+    # Skip if the value is NA or NULL
+    req(naicsCode())
+    
+    # Standardize the user input to 6 digits
+    user_id <- standardizeNaicsCode(naicsCode())
+    
+    # Get all available NAICS options
+    naics_options <- isolate(unique(filteredNAICS()$index_col))
+    
+    # Extract and standardize digits from all options
+    naics_digits <- sapply(naics_options, extractNaicsDigits)
+    
+    # Try to find an exact match first
+    exact_match_indices <- which(naics_digits == user_id)
+    
+    if (length(exact_match_indices) > 0) {
+      # We found an exact match
+      updatePickerInput(session, "naicsIndex", selected = naics_options[exact_match_indices[1]])
+    } else {
+      # No exact match, try removing trailing zeros for partial matches
+      # This allows entering "336" to match "336000"
+      user_id_numeric <- as.numeric(user_id)
+      naics_digits_numeric <- as.numeric(naics_digits)
+      
+      # Find options where the user input is a prefix
+      potential_matches <- which(floor(naics_digits_numeric / 10^(6 - nchar(naicsCode()))) == 
+                                   as.numeric(naicsCode()))
+      
+      if (length(potential_matches) > 0) {
+        updatePickerInput(session, "naicsIndex", selected = naics_options[potential_matches[1]])
+      }
+    }
+    
+    # Clear the input box after making the selection
+    #  invalidateLater(300)
+    isolate({
+      naicsCode(NA)
+    })
+  })
+  
+  # Clear numeric inputs when respective UI elements change
+  observeEvent(input$movingAverageTransform, {
+    movingAverageCode(NA)
+  })
+  
+  observeEvent(input$changeTransform, {
+    changeCode(NA)
+  })
+  
+  observeEvent(input$percentChangeTransform, {
+    percentChangeCode(NA)
+  })
+  
+  observeEvent(input$cagrTransform, {
+    cagrCode(NA)
+  })
+  
+  observeEvent(input$showSubIndustries, {
+    subIndustriesCode(NA)
+  })
+  
+  observeEvent(input$useSeasonalAdjustment, {
+    seasonalAdjustmentCode(NA)
+  })
+  
+  observeEvent(input$useIndexDate, {
+    indexToDateCode(NA)
+  })
+  
+  observeEvent(input$indexDate, {
+    indexDateCode(NA)
+  })
+  
+  observeEvent(input$naicsIndex, {
+    naicsCode(NA)
+  })
+  
+  # Load NAICS descriptions
+  naics_descriptions <- reactive({
+    read.csv("naics desc.csv", stringsAsFactors = FALSE)
+  })
+  
   # Add these code blocks to your server function:
   # Reactive value to track panel state
   panelCollapsed <- reactiveVal(TRUE)
@@ -853,7 +1979,26 @@ server <- function(input, output, session) {
     panelCollapsed(!panelCollapsed())
   })
   
-  
+  # NAICS description output
+  output$naicsDescription <- renderText({
+    req(input$naicsIndex)  # Ensure NAICS selection exists
+    
+    # Extract NAICS code from the selected string (everything before first space or dash)
+    naics_code <- gsub("^(\\d+).*", "\\1", input$naicsIndex)
+    
+    # Look up the description in the NAICS descriptions dataframe
+    description <- naics_descriptions() %>%
+      filter(`NAICS.Code` == naics_code) %>%
+      pull(Description)
+    
+    # If no description found, provide a default message
+    if (length(description) == 0 || is.na(description)) {
+      return("No description available for this NAICS code.")
+    }
+    
+    # Return the description with a header
+    paste0("NAICS ", naics_code, ": ", description)
+  })
   
   # Update panel header text based on data presence
   output$panelHeaderText <- renderText({
@@ -1004,11 +2149,47 @@ server <- function(input, output, session) {
                       selected = filtered_indicators[1])
   })
   
-  observeEvent(c(naicsConstraintCode(), getCurrentIndicator(), input$thematicGroupings), {
+  # Add this near the top of your server function with other reactive values
+  applyingChartCode <- reactiveVal(FALSE)
+  # Add these at the beginning of your server function
+  lastValidNAICSSelection <- reactiveVal(NULL)
+  applyingChartCode <- reactiveVal(FALSE)
+  
+  # Modify your existing observer that was causing issues - completely remove the indicator as a trigger
+  observeEvent(c(naicsConstraintCode(), input$thematicGroupings), {
+    # Skip if we're currently applying a chart code
+    if(applyingChartCode()) {
+      return()
+    }
+    
+    message("NAICS filter update from constraint or thematic grouping change")
+    new_choices <- unique(filteredNAICS()$index_col)
+    
+    # Try to use the last valid selection if it exists in new choices
+    current_selection <- lastValidNAICSSelection()
+    selected_value <- if(!is.null(current_selection) && current_selection %in% new_choices) {
+      current_selection
+    } else {
+      new_choices[1]
+    }
+    
     updatePickerInput(session, "naicsIndex",
-                      choices = unique(filteredNAICS()$index_col),
-                      selected = unique(filteredNAICS()$index_col)[1])
+                      choices = new_choices,
+                      selected = selected_value)
   })
+  
+  # Add this at the top of your server function
+  currentNaicsSelection <- reactiveVal(NULL)
+  
+  # Add an observer to track the current NAICS selection
+  observeEvent(input$naicsIndex, {
+    currentNaicsSelection(input$naicsIndex)
+  })
+  
+  # Add this to track changes to naicsIndex
+  observeEvent(input$naicsIndex, {
+    lastValidNAICSSelection(input$naicsIndex)
+  }, ignoreInit = TRUE)
   
   # Define reactive variable for transform name
   transformName <- reactive({
@@ -1383,7 +2564,7 @@ server <- function(input, output, session) {
     # Add final layout properties
     p %>% layout(
       shapes = recession_shapes,  # Place shapes first in layout
-      title = list(text = "Data Finder", font = list(size = 24)),
+      title = list(text = "", font = list(size = 24)),
       xaxis = list(
         showline = TRUE,
         linewidth = 1,
@@ -1888,16 +3069,24 @@ server <- function(input, output, session) {
   # Update this block
   output$downloadStoredData <- downloadHandler(
     filename = function() {
-      paste("final_visualization_data_", Sys.Date(), ".csv", sep = "")
+      # Create a timestamp in format YYYY-MM-DD_HHMMSS
+      timestamp <- format(Sys.time(), "%Y-%m-%d_%H%M%S")
+      paste0("final_visualization_data_", timestamp, ".csv")
     },
     content = function(file) {
-      # Ungroup the data first
+      # Rest of your download handler code remains the same
       data_to_export <- storedData() %>%
         ungroup() %>%
-        # Create a unique identifier for each series
-        mutate(Series = paste(Indicator, Transform_Name, index_col, sep = " - ")) %>%
-        # Select only the columns we need
-        select(Date, Series, Value, Units)  # Add Units to the export
+        # Create a user-friendly Series identifier like in the legend
+        mutate(Series = paste0(
+          Indicator, " for NAICS ", NAICS_Code, ": ", NAICS_Name,
+          ifelse(Transform_Name != "", paste0(", ", Transform_Name), ""),
+          " (", Units, ")"  # Append units in parentheses
+        )) %>%
+        # Format date as Excel-friendly (YYYY-MM-DD)
+        mutate(Date = format(Date, "%Y-%m-%d")) %>%
+        # Select only the needed columns
+        select(Date, Series, Value)
       
       # Pivot the data from long to wide format
       wide_data <- data_to_export %>%
@@ -1914,25 +3103,8 @@ server <- function(input, output, session) {
         wide_data$`User Vertical Line` <- format(vertical_line_date, "%Y-%m-%d")
       }
       
-      # Add a Units metadata row
-      units_row <- data_to_export %>%
-        distinct(Series, Units) %>%
-        pivot_wider(names_from = Series, values_from = Units)
-      
-      # Combine data with units metadata
-      metadata <- data.frame(Date = "Units", stringsAsFactors = FALSE)
-      for (col in names(wide_data)[-1]) {  # Skip the Date column
-        if (col %in% names(units_row)) {
-          metadata[[col]] <- units_row[[col]][1]
-        } else {
-          metadata[[col]] <- NA
-        }
-      }
-      
-      combined_data <- rbind(metadata, wide_data)
-      
       # Write the wide-format data to a CSV file
-      write.csv(combined_data, file, row.names = FALSE)
+      write.csv(wide_data, file, row.names = FALSE)
     }
   )
   
@@ -2059,12 +3231,6 @@ server <- function(input, output, session) {
   # Update your existing code to use getCurrentDataset() and getCurrentIndicator()
   # instead of getCurrentDataset() and getCurrentIndicator()
   
-  # Example: Update your observers
-  observeEvent(c(naicsConstraintCode(), getCurrentIndicator(), input$thematicGroupings), {
-    updatePickerInput(session, "naicsIndex",
-                      choices = unique(filteredNAICS()$index_col),
-                      selected = unique(filteredNAICS()$index_col)[1])
-  })
   
   # Update your filteredNAICS reactive
   filteredNAICS <- reactive({
@@ -2101,6 +3267,8 @@ server <- function(input, output, session) {
     }
   })
   
+  
+  
   # Reset inputs to default values
   observeEvent(input$resetInputs, {
     # Update the date range input
@@ -2110,7 +3278,7 @@ server <- function(input, output, session) {
     
     # Reset filters
     updatePickerInput(session, "thematicGroupings", selected = "No Constraint")
-    updatePickerInput(session, "naicsConstraint", selected = "")
+    updatePickerInput(session, "naicsConstraint", selected = "No Constraint")
     updatePickerInput(session, "naicsIndex", choices = unique(filteredNAICS()$index_col), 
                       selected = unique(filteredNAICS()$index_col)[1])
     updatePickerInput(session, "datasetDropdown", selected = unique(data$Dataset)[1])
