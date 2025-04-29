@@ -795,6 +795,14 @@ ui <- fluidPage(
                    div(class = "sidebar-col-6",
                        checkboxInput("useSeasonalAdjustment", "Seasonally Adjusted", value = FALSE)
                    )
+               ),
+               div(class = "sidebar-row",
+                   div(class = "sidebar-col-6",
+                       checkboxInput("showAllSeries", "Show All Series", value = FALSE)
+                   ),
+                   div(class = "sidebar-col-6",
+                       # Empty div to balance the layout
+                   )
                )
            ),
            
@@ -880,13 +888,10 @@ ui <- fluidPage(
                div(class = "sidebar-row",
                    div(class = "sidebar-col-12",
                        actionButton("addToStoredData", "Add to Multi-Series Viewer",
-                                    class = "sidebar-btn custom-button")
-                   )
-               ),
-               div(class = "sidebar-row", style = "margin-top: 10px;",
-                   div(class = "sidebar-col-12",
+                                    class = "sidebar-btn custom-button"),
                        actionButton("resetInputs", "Reset Inputs",
-                                    class = "sidebar-btn custom-button")
+                                    class = "sidebar-btn custom-button"),
+                       downloadButton("downloadCurrentData", "Download Current Data", class = "sidebar-btn")
                    )
                )
            )
@@ -2349,18 +2354,31 @@ server <- function(input, output, session) {
   })
   
   #  Create a list of NAICS codes based on the selected index column, Show Sub-Industries option, and Show All Included Series option
-  #  Create a list of NAICS codes based on the selected index column and Show Sub-Industries option
+  # Modify the selectedNAICS() reactive function to handle the new checkbox
   selectedNAICS <- reactive({
-    # Now we're only using the showSubIndustries checkbox
-    if (input$showSubIndustries) {
-      selected_index <- input$naicsIndex
-      selected_code <- strsplit(selected_index, " - ")[[1]][1]
+    # Check which checkboxes are selected
+    show_components <- input$showSubIndustries
+    show_all <- input$showAllSeries
+    
+    selected_index <- input$naicsIndex
+    selected_code <- strsplit(selected_index, " - ")[[1]][1]
+    
+    if (show_all) {
+      # Show all series that begin with the selected code
+      data %>%
+        filter(grepl(paste0("^", selected_code), NAICS_Code)) %>%
+        pull(index_col) %>%
+        unique()
+    } else if (show_components) {
+      # Existing functionality - show components (one digit longer)
       naics_codes <- c(selected_code, paste0(selected_code, 1:9))
       data %>%
         filter(NAICS_Code %in% naics_codes) %>%
-        pull(index_col)
+        pull(index_col) %>%
+        unique()
     } else {
-      input$naicsIndex
+      # Just show the selected index
+      selected_index
     }
   })
   
@@ -2573,22 +2591,35 @@ server <- function(input, output, session) {
   })
   
   #  Render line chart for filtered data
+  # Add this function near the top of your server section
+  format_tick_labels <- function(value) {
+    if (is.na(value)) return("")
+    
+    if (abs(value) >= 1e12) {
+      return(paste0(format(value/1e12, digits=1, nsmall=1, trim=TRUE), "T"))
+    } else if (abs(value) >= 1e9) {
+      return(paste0(format(value/1e9, digits=1, nsmall=1, trim=TRUE), "B"))
+    } else if (abs(value) >= 1e6) {
+      return(paste0(format(value/1e6, digits=1, nsmall=1, trim=TRUE), "M"))
+    } else if (abs(value) >= 1e3) {
+      return(paste0(format(value/1e3, digits=1, nsmall=1, trim=TRUE), "K"))
+    } else {
+      return(format(value, digits=1, nsmall=1, trim=TRUE))
+    }
+  }
+  
+  # Render line chart for filtered data
   output$lineChart <- renderPlotly({
     # Initialize the plot with hover formatting
-    p <- plot_ly(filteredData(), x = ~Date,
-                 hovertemplate = paste(
-                   "<b>%{text}</b><br>",
-                   "<span style='color:%{line.color}'></span> Value: %{y:.2f} ", filteredData()$Units,  # Add units to hover
-                   "<extra></extra>"
-                 ),
-                 text = ~index_col) %>%
+    p <- plot_ly(filteredData(), x = ~Date) %>%
       layout(
         hoverlabel = list(
           align = "left",
-          bgcolor = "white",
-          bordercolor = "darkgray"
+          bgcolor = "rgb(237, 234, 218)",  # Fully opaque
+          bordercolor = "rgb(0, 0, 0)",  # Fully opaque darkgray
+          font = list(size = 12)
         ),
-        hovermode = "x unified"
+        hovermode = "closest" # Changed from "x unified" to "closest"
       )
     
     # Get unique Units for y-axis title
@@ -2643,6 +2674,9 @@ server <- function(input, output, session) {
       })
     }
     
+    # Get the originally selected series before expansion
+    selected_base_series <- input$naicsIndex
+    
     # Add each series as a line trace
     for (series in unique(paste(filteredData()$Indicator, filteredData()$Transform_Name, filteredData()$index_col, sep = " - "))) {
       series_data <- filteredData() %>% 
@@ -2658,27 +2692,77 @@ server <- function(input, output, session) {
       # Get units for this series
       series_units <- series_data$Units[1]
       
+      # Create a unit-specific hover template with date included
+      if (grepl("Percent", series_units, ignore.case = TRUE)) {
+        hover_template <- paste0(
+          "<b>%{text}</b><br>",
+          "%{x|%b %Y}: %{y:.1%}<br>",  # Format as percentage with date
+          "<extra></extra>"
+        )
+      } else if (grepl("Dollar|dollars|nominal", series_units, ignore.case = TRUE)) {
+        # Match any of: "Dollar", "dollars", or "nominal"
+        hover_template <- paste0(
+          "<b>%{text}</b><br>",
+          "%{x|%b %Y}: $%{y:,.2f}<br>",  # Format as dollars with date
+          "<extra></extra>"
+        )
+      } else if (grepl("Index", series_units, ignore.case = TRUE)) {
+        hover_template <- paste0(
+          "<b>%{text}</b><br>",
+          "%{x|%b %Y}: %{y:.1f}<br>",  # Format with date
+          "<extra></extra>"
+        )
+      } else {
+        hover_template <- paste0(
+          "<b>%{text}</b><br>",
+          "%{x|%b %Y}: %{y:,.2f}<br>",  # Format with date
+          "<extra></extra>"
+        )
+      }
+      
+      # Determine if this is the selected base series
+      is_selected_base <- series_data$index_col[1] == selected_base_series
+      
+      # Use a thicker line for the selected base series when Show Components or Show All Series is checked
+      line_width <- if ((input$showSubIndustries || input$showAllSeries) && is_selected_base) 3 else 1
+      
       p <- p %>% add_lines(
         y = ~Value,
         data = series_data,
         name = legend_text,  # Use new formatted legend text
-        line = list(width = 1),
-        hovertemplate = paste0(
-          "<b>%{text}</b><br>",
-          "<span style='color:%{line.color}'></span> Value: %{y:.2f} ", series_units,
-          "<extra></extra>"
-        ),
+        line = list(width = line_width),
+        hovertemplate = hover_template,
         text = ~index_col,
         showlegend = TRUE
       )
     }
     
-    # Apply appropriate tick formatting
-    if (any(filteredData()$Axis_Type == "Percentage")) {
-      p <- p %>% layout(yaxis = list(tickformat = ".1%"))
-    } else {
-      p <- p %>% layout(yaxis = list(tickformat = ","))
+    # Custom tick formatting for y-axis
+    if (nrow(filteredData()) > 0) {
+      # Get value range
+      y_range <- range(filteredData()$Value, na.rm = TRUE)
+      
+      # Generate appropriate tick values
+      tick_count <- 6 # number of ticks desired
+      y_ticks <- pretty(y_range, n = tick_count)
+      
+      # Format tick labels with our custom function
+      y_ticktext <- sapply(y_ticks, format_tick_labels)
+      
+      # Apply appropriate tick formatting based on axis type
+      if (any(filteredData()$Axis_Type == "Percentage")) {
+        p <- p %>% layout(yaxis = list(tickformat = ".1%"))
+      } else {
+        p <- p %>% layout(
+          yaxis = list(
+            tickmode = "array",
+            tickvals = y_ticks,
+            ticktext = y_ticktext
+          )
+        )
+      }
     }
+    
     
     # Add final layout properties
     p %>% layout(
@@ -2733,14 +2817,17 @@ server <- function(input, output, session) {
       ),
       hoverlabel = list(
         align = "left",
-        bgcolor = "white",
-        bordercolor = "darkgray"
+        bgcolor = "rgb(237, 234, 218)",  # Fully opaque
+        bordercolor = "rgb(0, 0, 0)",  # Fully opaque darkgray
+        font = list(size = 12)
       ),
-      hovermode = "x unified",
+      hovermode = "closest", # Changed from "x unified" to "closest"
       plot_bgcolor = "rgba(255, 255, 255, 0.9)",
       paper_bgcolor = "rgba(255, 255, 255, 0.9)"
     )
-  })  
+  })
+  
+  
   # Reactive expression for the chart title
   chartTitle <- reactive({
     if(input$finishedVisualizationTitle == "") {
@@ -2752,6 +2839,7 @@ server <- function(input, output, session) {
   
   # Modify the existing storedLineChart output
   # Render the plotly visualization for stored data with custom colors
+  # Render the plotly visualization for stored data with custom colors
   output$storedLineChart <- renderPlotly({
     # Initialize the base plot with proper hover label formatting
     p <- plot_ly(storedData(), x = ~Date) %>%
@@ -2759,12 +2847,12 @@ server <- function(input, output, session) {
         # Set up hover label formatting
         hoverlabel = list(
           align = "left",
-          bgcolor = "white",
-          bordercolor = "darkgray",
-          font = list(family = "Arial", size = 12),
+          bgcolor = "rgb(237, 234, 218)",  # Fully opaque background
+          bordercolor = "rgb(0, 0, 0)",    # Black border
+          font = list(family = "Arial", color = "rgb(0, 0, 0)", size = 12),  # Black text
           namelength = -1
         ),
-        hovermode = "x unified"
+        hovermode = "closest" # Changed from "x unified" to "closest"
       )
     
     # Determine which series go on left vs right axis
@@ -2879,19 +2967,59 @@ server <- function(input, output, session) {
       }
     }
     
+    # Generate custom ticks for left axis
+    left_tick_labels <- NULL
+    if (!is.null(left_range) && length(left_axis_series) > 0) {
+      left_ticks <- pretty(left_range, n = 6)
+      left_tick_labels <- sapply(left_ticks, format_tick_labels)
+    }
+    
+    # Generate custom ticks for right axis
+    right_tick_labels <- NULL
+    if (!is.null(right_range) && length(right_axis_series) > 0) {
+      right_ticks <- pretty(right_range, n = 6)
+      right_tick_labels <- sapply(right_ticks, format_tick_labels)
+    }
+    
     # Configure right-side y-axis
     if (!is.null(right_range)) {
-      p <- p %>% layout(
-        yaxis2 = list(
-          overlaying = "y",
-          side = "right",
-          title = right_axis_title,
-          showgrid = FALSE,
-          range = right_range,  # Set explicit range if calculated
-          fixedrange = FALSE,
-          rangemode = "normal"
+      # Check if right axis shows percentages
+      right_percent <- FALSE
+      if (length(right_axis_series) > 0) {
+        right_percent <- any(storedData() %>% 
+                               filter(Combined %in% right_axis_series) %>% 
+                               pull(Axis_Type) == "Percentage")
+      }
+      
+      if (right_percent) {
+        p <- p %>% layout(
+          yaxis2 = list(
+            overlaying = "y",
+            side = "right",
+            title = right_axis_title,
+            showgrid = FALSE,
+            range = right_range,
+            tickformat = ".1%",
+            fixedrange = FALSE,
+            rangemode = "normal"
+          )
         )
-      )
+      } else {
+        p <- p %>% layout(
+          yaxis2 = list(
+            overlaying = "y",
+            side = "right",
+            title = right_axis_title,
+            showgrid = FALSE,
+            range = right_range,
+            tickmode = if (!is.null(right_tick_labels)) "array" else "auto",
+            tickvals = if (!is.null(right_tick_labels)) right_ticks else NULL,
+            ticktext = right_tick_labels,
+            fixedrange = FALSE,
+            rangemode = "normal"
+          )
+        )
+      }
     } else {
       p <- p %>% layout(
         yaxis2 = list(
@@ -2967,6 +3095,33 @@ server <- function(input, output, session) {
       # Get units for this series
       series_units <- series_data$Units[1]
       
+      # Create a unit-specific hover template with date included
+      if (grepl("Percent", series_units, ignore.case = TRUE)) {
+        hover_template <- paste0(
+          "<b>%{text}</b><br>",
+          "%{x|%b %Y}: %{y:.1%}<br>",  # Format as percentage with date
+          "<extra></extra>"
+        )
+      } else if (grepl("Dollar|dollars|nominal", series_units, ignore.case = TRUE)) {
+        hover_template <- paste0(
+          "<b>%{text}</b><br>",
+          "%{x|%b %Y}: $%{y:,.2f}<br>",  # Format as dollars with date
+          "<extra></extra>"
+        )
+      } else if (grepl("Index", series_units, ignore.case = TRUE)) {
+        hover_template <- paste0(
+          "<b>%{text}</b><br>",
+          "%{x|%b %Y}: %{y:.1f}<br>",  # Format with date
+          "<extra></extra>"
+        )
+      } else {
+        hover_template <- paste0(
+          "<b>%{text}</b><br>",
+          "%{x|%b %Y}: %{y:,.2f}<br>",  # Format with date
+          "<extra></extra>"
+        )
+      }
+      
       # Add the line trace for this series
       p <- p %>% add_trace(
         data = series_data,
@@ -2980,11 +3135,7 @@ server <- function(input, output, session) {
           width = line_width,
           color = series_color
         ),
-        hovertemplate = paste0(
-          "<b>%{text}</b><br>",
-          "<span style='color:", series_color, "'></span> Value: %{y:.2f} ", series_units,  # Add units to hover
-          "<extra></extra>"
-        ),
+        hovertemplate = hover_template,
         text = ~Combined,
         showlegend = TRUE
       )
@@ -3006,23 +3157,30 @@ server <- function(input, output, session) {
                              pull(Axis_Type) == "Percentage")
     }
     
-    # Apply appropriate tick formatting based on axis type
-    p <- p %>% layout(
-      yaxis = list(
-        tickformat = if(left_percent) ".1%" else ",", 
-        autorange = is.null(left_range),
-        range = left_range,
-        fixedrange = FALSE, 
-        rangemode = if(is.null(left_range)) "auto" else "normal"
-      ),
-      yaxis2 = list(
-        tickformat = if(right_percent) ".1%" else ",", 
-        autorange = is.null(right_range),
-        range = right_range,
-        fixedrange = FALSE, 
-        rangemode = if(is.null(right_range)) "auto" else "normal"
+    # Apply appropriate tick formatting for left axis
+    if (left_percent) {
+      p <- p %>% layout(
+        yaxis = list(
+          tickformat = ".1%", 
+          autorange = is.null(left_range),
+          range = left_range,
+          fixedrange = FALSE, 
+          rangemode = if(is.null(left_range)) "auto" else "normal"
+        )
       )
-    )
+    } else {
+      p <- p %>% layout(
+        yaxis = list(
+          tickmode = if (!is.null(left_tick_labels)) "array" else "auto",
+          tickvals = if (!is.null(left_tick_labels)) left_ticks else NULL,
+          ticktext = left_tick_labels,
+          autorange = is.null(left_range),
+          range = left_range,
+          fixedrange = FALSE, 
+          rangemode = if(is.null(left_range)) "auto" else "normal"
+        )
+      )
+    }
     
     # Add reference lines if enabled
     if (input$addHorizontalLine) {
@@ -3051,6 +3209,7 @@ server <- function(input, output, session) {
         hoverinfo = "none"
       )
     }
+
     
     # Add final layout configuration
     p %>% layout(
@@ -3115,6 +3274,13 @@ server <- function(input, output, session) {
         r = 50,
         b = 120,
         l = 50
+      ),
+      hoverlabel = list(
+        align = "left",
+        bgcolor = "rgb(237, 234, 218)",  # Fully opaque background
+        bordercolor = "rgb(0, 0, 0)",    # Black border
+        font = list(family = "Arial", color = "rgb(0, 0, 0)", size = 12),  # Black text
+        namelength = -1
       )
     )
   })
@@ -3183,6 +3349,42 @@ server <- function(input, output, session) {
     # Collapse the panel when data is cleared
     panelCollapsed(TRUE)
   })
+  
+  # Add this as a standalone function in your server
+  output$downloadCurrentData <- downloadHandler(
+    filename = function() {
+      timestamp <- format(Sys.time(), "%Y-%m-%d_%H%M%S")
+      return(paste0("data_viewer_data_", timestamp, ".csv"))
+    },
+    content = function(file) {
+      # Safely capture the filtered data 
+      current_data <- filteredData()
+      
+      # Create export version with formatted columns
+      data_to_export <- current_data %>%
+        ungroup() %>%
+        # Create a user-friendly Series identifier
+        mutate(Series = paste0(
+          Indicator, " for NAICS ", NAICS_Code, ": ", NAICS_Name,
+          ifelse(Transform_Name != "", paste0(", ", Transform_Name), ""),
+          " (", Units, ")"
+        )) %>%
+        # Format date as Excel-friendly
+        mutate(Date = format(Date, "%Y-%m-%d")) %>%
+        # Select only the needed columns
+        select(Date, Series, Value)
+      
+      # Pivot to wide format
+      wide_data <- tidyr::pivot_wider(
+        data = data_to_export,
+        names_from = Series,
+        values_from = Value
+      )
+      
+      # Write to CSV file
+      write.csv(wide_data, file, row.names = FALSE)
+    }
+  )
   
   #  Download handler for stored data
   # Update this block
