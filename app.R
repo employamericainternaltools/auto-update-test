@@ -22,6 +22,45 @@ css <- HTML("
 body {
   background-color: #edeada;
 }
+/* Add black borders around main navbar tabs */
+.main-navbar .nav-tabs > li > a {
+  border: 1px solid #000000;
+  margin-right: -1px; /* Prevent double borders between tabs */
+  border-radius: 4px 4px 0 0; /* Round top corners only */
+  margin-bottom: -1px; /* Connect with bottom border */
+}
+
+/* Ensure active tab in main navbar properly connects with content below */
+.main-navbar .nav-tabs > li.active > a,
+.main-navbar .nav-tabs > li.active > a:hover,
+.main-navbar .nav-tabs > li.active > a:focus {
+  border: 1px solid #000000;
+  border-bottom-color: transparent; /* Hide bottom border for active tab */
+}
+
+/* Add black borders around sub navbar tabs */
+.sub-navbar .nav-tabs > li > a {
+  border: 1px solid #000000;
+  border-radius: 4px;
+  margin: 0 5px; /* Add spacing between tabs */
+}
+
+/* Style active tab in sub navbar */
+.sub-navbar .nav-tabs > li.active > a,
+.sub-navbar .nav-tabs > li.active > a:hover,
+.sub-navbar .nav-tabs > li.active > a:focus {
+  border: 1px solid #000000;
+  border-bottom-width: 3px; /* Thicker bottom border for active tab */
+}
+
+/* Center the sub-navigation tabs */
+.sub-navbar .nav-tabs {
+  display: flex;
+  justify-content: center; /* Center the tabs */
+  width: 100%;
+  padding: 0;
+  border-bottom: none;
+}
 
 /* Update container backgrounds to match or complement the new background */
 .container-fluid {
