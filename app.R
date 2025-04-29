@@ -596,9 +596,9 @@ ui <- fluidPage(
           tabsetPanel(id = "datasetNav", type = "tabs",
                       tabPanel("International Trade", value = "International Trade"),
                       tabPanel("Production and Capacity", value = "Production and Capacity"),
-                      tabPanel("Price Indices", value = "Price Indices"),
-                      tabPanel("Current Employment Statistics", value = "Current Employment Statistics"),
-                      tabPanel("M3 Manufacturers Shipments, Inventories & Orders", 
+                      tabPanel("Prices", value = "Price Indices"),
+                      tabPanel("Employment", value = "Current Employment Statistics"),
+                      tabPanel("Manufacturing", 
                                value = "M3 Manufacturers Shipments, Inventories & Orders"),
                       tabPanel("Investment", value = "Investment")
           )
@@ -615,8 +615,8 @@ ui <- fluidPage(
                 tabsetPanel(id = "internationalTradeNav", type = "tabs",
                             tabPanel("Imports", value = "Imports"),
                             tabPanel("Exports", value = "Exports"),
-                            tabPanel("PPI-Deflated Imports", value = "PPI-Deflated Imports"),
-                            tabPanel("IPI-Deflated Imports", value = "IPI-Deflated Imports"),
+                            tabPanel("PPI-Adjusted Imports", value = "PPI-Deflated Imports"),
+                            tabPanel("IPI-Adjusted Imports", value = "IPI-Deflated Imports"),
                             tabPanel("PPI-Adjusted Exports", value = "PPI-Adjusted Exports"),
                             tabPanel("EPI-Adjusted Exports", value = "EPI-Adjusted Exports")
                 )
@@ -711,13 +711,15 @@ ui <- fluidPage(
   fluidRow(
     # Left sidebar (25% width) for Select and Transform
     column(width = 3,
-           # Combined panel for Select and Transform
+           # "Select Data" blue box
            div(class = "sidebar-panel",
-               # Date Range - Full Width
+               h4("Select Data", style = "margin-top: 0; margin-bottom: 10px; border-bottom: 1px solid #000000; padding-bottom: 5px;"),
+               
+               # Date Range - Full Width without label
                div(class = "sidebar-row",
                    div(class = "sidebar-col-12",
                        dateRangeInput("dateRange", 
-                                      label = "Date Range",
+                                      label = NULL, # Removed the label
                                       start = as.Date("1900-01-01"),
                                       end = Sys.Date(),
                                       min = "1900-01-01",
@@ -727,142 +729,141 @@ ui <- fluidPage(
                    )
                ),
                
-               # Industry and NAICS constraints - Two columns
+               # NAICS constraint (sector) - Full width
                div(class = "sidebar-row",
-                   div(class = "sidebar-col-6",
-                       pickerInput("thematicGroupings", "Industry Constraint",
-                                   choices = c("No Constraint", "INFRASTRUCTURE", "Roads and Bridges", "Public Transit",  
-                                               "EV Infrastructure", "Airports", "Port Infrastructure",
-                                               "Water Infrastructure", "Internet and Communications Infrastructure",
-                                               "Electrical Grid and Transmission Infrastructure", "CLEAN ENERGY", 
-                                               "Wind Turbines", "Solar Panels", "Batteries", "Electric Vehicles", 
-                                               "Nuclear Power", "Carbon Capture and Storage", "Clean Hydrogen", 
-                                               "Critical Minerals", "Geothermal Energy", "Heat Pumps", 
-                                               "SEMICONDUCTORS", "HOUSING", "AUTOMOBILES"),
-                                   options = list(`live-search` = TRUE))
-                   ),
-                   div(class = "sidebar-col-6",
-                       pickerInput("naicsConstraint", "NAICS Code Constraint",
+                   div(class = "sidebar-col-12",
+                       pickerInput("naicsConstraint", "Filter by Sector",
                                    choices = c("No Constraint", unique(data$index_col[grepl("^\\d{3}\\b", data$NAICS_Code)])),
                                    options = list(`live-search` = TRUE))
                    )
                ),
                
-               # NAICS selection - Full width with description box below
+               # Industry selection
                div(class = "sidebar-row",
                    div(class = "sidebar-col-12",
-                       pickerInput("naicsIndex", "Select NAICS Code:",
+                       pickerInput("naicsIndex", "Industry",
                                    choices = NULL,
                                    selected = NULL,
                                    options = list(`live-search` = TRUE))
-                   ),
-                   div(class = "sidebar-col-12",
-                       div(class = "naics-description-box",
-                           textOutput("naicsDescription")
-                       )
                    )
                ),
                
-               # Checkboxes - Two columns
+               # Checkboxes on the same row
                div(class = "sidebar-row",
                    div(class = "sidebar-col-6",
-                       checkboxInput("showSubIndustries", "Show Sub-Industries?", value = FALSE)
+                       checkboxInput("showSubIndustries", "Show Components", value = FALSE)
                    ),
                    div(class = "sidebar-col-6",
-                       checkboxInput("useSeasonalAdjustment", "Show Seasonally Adjusted Data", value = FALSE)
+                       checkboxInput("useSeasonalAdjustment", "Seasonally Adjusted", value = FALSE)
                    )
-               ),
+               )
+           ),
+           
+           # "Transform Data" blue box
+           div(class = "sidebar-panel", style = "margin-top: 15px;",
+               h4("Transform Data", style = "margin-top: 0; margin-bottom: 10px; border-bottom: 1px solid #000000; padding-bottom: 5px;"),
                
-               # Index to date - Two columns
+               # Index to date row
                div(class = "sidebar-row",
                    div(class = "sidebar-col-6",
                        checkboxInput("useIndexDate", "Index to Date", value = FALSE)
                    ),
                    div(class = "sidebar-col-6",
-                       dateInput("indexDate", "Index Date:",
+                       dateInput("indexDate", NULL, # Removed the label
                                  value = as.Date("2020-01-01"),
-                                 min = "2000-01-01",
+                                 min = "1900-01-01",
                                  max = Sys.Date(),
                                  format = "yyyy-mm",
                                  startview = "year")
                    )
                ),
                
-               # Transformations - Two columns
+               # Transformations - First row
                div(class = "sidebar-row",
                    div(class = "sidebar-col-6",
-                       selectInput("movingAverageTransform", "Moving Average:", 
+                       selectInput("movingAverageTransform", "Moving Average", 
                                    choices = c("No Transform", "3 Months", "6 Months", "12 Months", "18 Months", "36 Months"),
                                    selected = "No Transform")
                    ),
                    div(class = "sidebar-col-6",
-                       selectInput("changeTransform", "Change:", 
+                       selectInput("changeTransform", "Change", 
                                    choices = c("No Transform", "1 Month", "3 Months", "6 Months", "12 Months", "18 Months", "36 Months"),
                                    selected = "No Transform")
                    )
                ),
                
+               # Transformations - Second row
                div(class = "sidebar-row",
                    div(class = "sidebar-col-6",
-                       selectInput("percentChangeTransform", "Percent Change:", 
+                       selectInput("percentChangeTransform", "Percent Change", 
                                    choices = c("No Transform", "1 Month", "3 Months", "6 Months", "12 Months", "18 Months", "36 Months"),
                                    selected = "No Transform")
                    ),
                    div(class = "sidebar-col-6",
-                       selectInput("cagrTransform", "CAGR:", 
+                       selectInput("cagrTransform", "CAGR", 
                                    choices = c("No Transform", "1 Month", "3 Months", "6 Months", "12 Months", "18 Months", "36 Months"),
                                    selected = "No Transform")
                    )
-               ),
+               )
+           ),
+           
+           # "Manage Data" blue box
+           div(class = "sidebar-panel", style = "margin-top: 15px;",
+               h4("Manage Data", style = "margin-top: 0; margin-bottom: 10px; border-bottom: 1px solid #000000; padding-bottom: 5px;"),
                
-               # Bottom buttons 
-               div(class = "sidebar-buttons",
-                   div(class = "sidebar-row",
-                       div(class = "sidebar-col-12",
-                           actionButton("addToStoredData", "Add Data to Final Visualization",
-                                        class = "sidebar-btn custom-button")
-                       )
-                   ),
-                   div(class = "sidebar-row",
-                       div(class = "sidebar-col-12",
-                           actionButton("resetInputs", "Reset Inputs",
-                                        class = "sidebar-btn custom-button")
-                       )
-                   )
-               ),
-               # Parameter IDs box
+               # Chart Code section
                div(class = "sidebar-row",
                    div(class = "sidebar-col-12",
-                       wellPanel(
-                         style = "margin-top: 15px; padding: 10px;",
-                         div(id = "globalParameterIDDisplay",
-                             h4("Chart Code", style = "margin-top: 0; margin-bottom: 10px;"),
-                             # New container for text output and copy button
-                             div(class = "chart-code-container",
-                                 div(class = "chart-code-text", textOutput("globalParameterID")),
-                                 # Copy button with icon
-                                 tags$button(
-                                   id = "copyChartCodeBtn",
-                                   class = "copy-btn",
-                                   title = "Copy to clipboard",
-                                   icon("copy")
-                                 )
-                             ),
-                             textInput("globalParameterIdInput", "Enter Chart Code:", ""),
-                             actionButton("applyGlobalParameterId", "Apply Global ID", 
-                                          class = "sidebar-btn custom-button")
-                         )
+                       div(id = "globalParameterIDDisplay",
+                           h5("Chart Code", style = "margin-top: 0; margin-bottom: 10px;"),
+                           # Container for text output and copy button
+                           div(class = "chart-code-container",
+                               div(class = "chart-code-text", textOutput("globalParameterID")),
+                               # Copy button with icon
+                               tags$button(
+                                 id = "copyChartCodeBtn",
+                                 class = "copy-btn",
+                                 title = "Copy to clipboard",
+                                 icon("copy")
+                               )
+                           ),
+                           textInput("globalParameterIdInput", "", ""),
+                           actionButton("applyGlobalParameterId", "Apply Chart Code", 
+                                        class = "sidebar-btn custom-button")
                        )
+                   )
+               ),
+               
+               # Divider
+               hr(style = "border-top: 1px solid #000000; margin: 10px 0;"),
+               
+               # Action buttons
+               div(class = "sidebar-row",
+                   div(class = "sidebar-col-12",
+                       actionButton("addToStoredData", "Add to Multi-Series Viewer",
+                                    class = "sidebar-btn custom-button")
+                   )
+               ),
+               div(class = "sidebar-row", style = "margin-top: 10px;",
+                   div(class = "sidebar-col-12",
+                       actionButton("resetInputs", "Reset Inputs",
+                                    class = "sidebar-btn custom-button")
                    )
                )
            )
     ),
     
+    
     # Right content area (75% width) for visualization
     column(width = 9,
            # First chart - Data Finder
            div(class = "chart-container",
-               plotlyOutput("lineChart", height = "600px")
+               plotlyOutput("lineChart", height = "625px")
+           ),
+           
+           # Add the new information box here
+           div(class = "naics-description-box", style = "max-height: 245px; margin-top: 15px; margin-bottom: 20px;",
+               htmlOutput("dataInformationBox")
            )
     )
   ),
@@ -889,7 +890,7 @@ ui <- fluidPage(
                                           
                                           # Title input with reduced margin
                                           div(style = "margin-bottom: 10px;",
-                                              textInput("finishedVisualizationTitle", "Title:", value = "Finished Visualization")
+                                              textInput("finishedVisualizationTitle", "Title:", value = "Multi-Series Viewer")
                                           ),
                                           
                                           # Add Graphics section - more compact layout
@@ -992,6 +993,150 @@ ui <- fluidPage(
 
 # Define server logic
 server <- function(input, output, session) {
+  
+  # First, add these lines near the top of your server function where you load data
+  # Load additional description files
+  dataset_descriptions <- reactive({
+    read.csv("dataset.csv", stringsAsFactors = FALSE)
+  })
+  
+  indicator_descriptions <- reactive({
+    read.csv("indicators.csv", stringsAsFactors = FALSE)
+  })
+  
+  citation_info <- reactive({
+    read.csv("citations.csv", stringsAsFactors = FALSE)
+  })
+  
+  # Add this to your server function
+  output$dataInformationBox <- renderUI({
+    # Get current selections
+    current_dataset <- getCurrentDataset()
+    current_indicator <- getCurrentIndicator()
+    current_naics <- input$naicsIndex
+    
+    # Get the most recent data for the selected series
+    recent_data <- filteredData() %>%
+      filter(index_col == current_naics) %>%
+      arrange(desc(Date)) %>%
+      head(13)  # Get top 13 rows to ensure we have current, prior, and year-ago data
+    
+    # Function to format values based on units
+    format_value <- function(value, units) {
+      if (is.na(value) || value == "N/A") return("N/A")
+      
+      # Format based on units
+      if (grepl("Percent", units, ignore.case = TRUE)) {
+        return(paste0(format(round(value * 100, 1), nsmall = 1), "%"))
+      } else if (grepl("Dollar", units, ignore.case = TRUE)) {
+        return(paste0("$", format(round(value, 2), big.mark = ",", nsmall = 2)))
+      } else if (grepl("Index", units, ignore.case = TRUE)) {
+        # Extract index date if present (format: "Index, MM-YYYY = 100")
+        index_date <- gsub(".*Index, ([0-9]{2}-[0-9]{4}) = 100.*", "\\1", units)
+        if (index_date != units) {  # If we successfully extracted a date
+          return(paste0(format(round(value, 1), nsmall = 1), " (", index_date, " = 100)"))
+        } else {
+          return(format(round(value, 1), nsmall = 1))
+        }
+      } else {
+        # For other units, just round to 2 decimal places
+        return(format(round(value, 2), big.mark = ",", nsmall = 2))
+      }
+    }
+    
+    # Extract values for the three time periods
+    if (nrow(recent_data) >= 1) {
+      most_recent_date <- format(recent_data$Date[1], "%b %Y")
+      most_recent_value <- format_value(recent_data$Value[1], recent_data$Units[1])
+    } else {
+      most_recent_date <- "N/A"
+      most_recent_value <- "N/A"
+    }
+    
+    if (nrow(recent_data) >= 2) {
+      prior_month_date <- format(recent_data$Date[2], "%b %Y")
+      prior_month_value <- format_value(recent_data$Value[2], recent_data$Units[2])
+    } else {
+      prior_month_date <- "N/A"
+      prior_month_value <- "N/A"
+    }
+    
+    # Find the data from approximately one year ago (12 months back, or the closest we have)
+    year_ago_index <- which(abs(as.numeric(difftime(recent_data$Date, recent_data$Date[1], units = "days"))) 
+                            >= 360 & abs(as.numeric(difftime(recent_data$Date, recent_data$Date[1], units = "days"))) 
+                            <= 370)
+    
+    if (length(year_ago_index) > 0) {
+      year_ago_date <- format(recent_data$Date[year_ago_index[1]], "%b %Y")
+      year_ago_value <- format_value(recent_data$Value[year_ago_index[1]], recent_data$Units[year_ago_index[1]])
+    } else if (nrow(recent_data) >= 12) {
+      year_ago_date <- format(recent_data$Date[12], "%b %Y")
+      year_ago_value <- format_value(recent_data$Value[12], recent_data$Units[12])
+    } else {
+      year_ago_date <- "N/A"
+      year_ago_value <- "N/A"
+    }
+    
+    # Look up descriptions
+    dataset_desc <- dataset_descriptions() %>%
+      filter(Name == current_dataset) %>%
+      pull(Description)
+    
+    indicator_desc <- indicator_descriptions() %>%
+      filter(Name == current_indicator) %>%
+      pull(Description)
+    
+    citation <- citation_info() %>%
+      filter(Name == current_dataset) %>%
+      pull(Description)
+    
+    # Get the existing NAICS description
+    naics_code <- gsub("^(\\d+).*", "\\1", current_naics)
+    naics_desc <- naics_descriptions() %>%
+      filter(`NAICS.Code` == naics_code) %>%
+      pull(Description)
+    
+    # Handle cases where descriptions are not found
+    if(length(dataset_desc) == 0) dataset_desc <- "No description available."
+    if(length(indicator_desc) == 0) indicator_desc <- "No description available."
+    if(length(citation) == 0) citation <- "No citation information available."
+    if(length(naics_desc) == 0) naics_desc <- "No description available for this NAICS code."
+    
+    # Create HTML output
+    tagList(
+      # New section for Recent Readings
+      tags$p(
+        tags$strong("Recent Readings:")
+      ),
+      tags$p(
+        tags$strong(most_recent_date, ": "), most_recent_value
+      ),
+      tags$p(
+        tags$strong(prior_month_date, ": "), prior_month_value
+      ),
+      tags$p(
+        tags$strong(year_ago_date, ": "), year_ago_value
+      ),
+      
+      # Original content below
+      tags$p(
+        tags$strong("Dataset: "), current_dataset
+      ),
+      tags$p(dataset_desc),
+      tags$p(
+        tags$strong("Indicator: "), current_indicator
+      ),
+      tags$p(indicator_desc),
+      tags$p(
+        tags$strong("Industry: "), current_naics
+      ),
+      tags$p(paste0("NAICS ", naics_code, ": ", naics_desc)),
+      tags$p(
+        tags$strong("Suggested Citation:")
+      ),
+      tags$p(citation)
+    )
+  })
   
   # Add a click observer for the NAICS dropdown
   observeEvent(input$naicsIndex_open, {
@@ -1242,7 +1387,6 @@ server <- function(input, output, session) {
     chartCodeParams(params)
     
     # Step 1: Reset constraints
-    updatePickerInput(session, "thematicGroupings", selected = "No Constraint")
     updatePickerInput(session, "naicsConstraint", selected = "No Constraint")
     
     # Move to Step 2
@@ -2003,9 +2147,9 @@ server <- function(input, output, session) {
   # Update panel header text based on data presence
   output$panelHeaderText <- renderText({
     if (nrow(storedData()) == 0) {
-      "Finished Visualization Manager (No Data)"
+      "Multi-Series Viewer (No Data)"
     } else {
-      paste0("Finished Visualization Manager (", 
+      paste0("Multi-Series Viewer (", 
              nrow(unique(storedData()[, "Combined", drop = FALSE])), 
              " Series)")
     }
@@ -2055,77 +2199,13 @@ server <- function(input, output, session) {
     }
   })
   
-  # Thematic NAICS codes
-  thematicNAICS <- reactive({
-    if (input$thematicGroupings == "No Constraint") {
-      unique(data$NAICS_Code)
-    } else {
-      switch(input$thematicGroupings,
-             "Roads and Bridges" = c("32412", "32732", "3311", "3323", "33312", "3273", "3273", "3323", "333"),
-             "Public Transit" = c("3261", "3272", "3323", "3323", "332", "3325", "332", "33313", "3334", "3336", "333", "3343", "3344", "3345", "3353", "3359", "3365"),
-             "EV Infrastructure" = c("3273", "3315", "332", "3342", "3345", "3353", "33591", "33593", "3359"),
-             "Airports" = c("32412", "3261", "32732", "3273", "3273", "3279", "3323", "3323", "3323", "3323"),
-             "Port Infrastructure" = c("32732", "3311", "3323", "3323", "33312", "333", "333", "333"),
-             "Water Infrastructure" = c("3261", "3273", "331", "3329", "3333", "333", "3345", "3345", "3359"),
-             "Internet and Communications Infrastructure" = c("3323", "3342", "3342", "3342", "3344", "3359", "3359"),
-             "Electrical Grid and Transmission Infrastructure" = c("3314", "3323", "3345", "3353", "3353", "33592", "33593", "3359"),
-             "SEMICONDUCTORS" = c("3329", "3329", "3332", "3332", "3333", "3333", "333", "3344", "3345", "3353", "3391"),
-             "Wind Turbines" = c("3315", "3323", "332991", "3336", "3336", "3336", "3344", "3359", "3359"),
-             "Solar Panels" = c("32518", "3261", "3272", "3314", "3323", "332", "3332", "3332", "3344", "3344", "33593", "3359"),
-             "Batteries" = c("32518", "3261", "33141", "3314", "3344", "3344", "33591"),
-             "Electric Vehicles" = c("3342", "3344", "3344", "3345", "3353", "33591", "3363"),
-             "Nuclear Power" = c("3323", "3323", "332", "332", "3329", "3336", "3336", "3336", "3345", "3345", "3353", "3359"),
-             "Carbon Capture and Storage" = c("32518", "3329", "33313", "3334", "3345", "3345"),
-             "Clean Hydrogen" = c("32518", "3329", "33313", "333", "3344", "3345"),
-             "Critical Minerals" = c("21221", "21222", "2123", "2122", "32518", "33141", "3314", "33313"),
-             "Geothermal Energy" = c("3327", "3329", "33313", "3334", "3345", "3353"),
-             "Heat Pumps" = c("3314", "3334", "3345", "3353"),
-             "HOUSING" = c("32191", "32191", "3261", "32712", "32731", "32732", "3274", "3279", "3311", "331", "3325", "3334", "3351", "33522", "3371"),
-             "AUTOMOBILES" = c("3315", "3315", "3321", "3335", "3336", "3344", "3362", "3363", "3363", "3363", "3363"),
-             "INFRASTRUCTURE" = c("32412", "32732", "3311", "3323", "33312", "3273", "3273", "3323", "333",
-                                  "3261", "3272", "3323", "3323", "332", "3325", "332", "33313", "3334", "3336", "333", "3343", "3344", "3345", "3353", "3359", "3365",
-                                  "3273", "3315", "332", "3342", "3345", "3353", "33591", "33593", "3359",
-                                  "32412", "3261", "32732", "3273", "3273", "3279", "3323", "3323", "3323", "3323",
-                                  "32732", "3311", "3323", "3323", "33312", "333", "333", "333",
-                                  "3261", "3273", "331", "3329", "3333", "333", "3345", "3345", "3359",
-                                  "3323", "3342", "3342", "3342", "3344", "3359", "3359",
-                                  "3314", "3323", "3345", "3353", "3353", "33592", "33593", "3359"),
-             "CLEAN ENERGY" = c("3314", "3323", "3345", "3353", "3353", "33592", "33593", "3359",
-                                "3315", "3323", "332991", "3336", "3336", "3336", "3344", "3359", "3359",
-                                "32518", "3261", "3272", "3314", "3323", "332", "3332", "3332", "3344", "3344", "33593", "3359",
-                                "32518", "3261", "33141", "3314", "3344", "3344", "33591",
-                                "3342", "3344", "3344", "3345", "3353", "33591", "3363",
-                                "3323", "3323", "332", "332", "3329", "3336", "3336", "3336", "3345", "3345", "3353", "3359",
-                                "32518", "3329", "33313", "3334", "3345", "3345",
-                                "32518", "3329", "33313", "333", "3344", "3345",
-                                "21221", "21222", "2123", "2122", "32518", "33141", "3314", "33313",
-                                "3327", "3329", "33313", "3334", "3345", "3353",
-                                "3314", "3334", "3345", "3353")
-      )
-    }
-  })
   
-  #Observers to make sure NAICS Constraint and Thematic Groupings are mutually exclusive
-  observeEvent(input$naicsConstraint, {
-    if (input$naicsConstraint != "No Constraint") {
-      updateSelectInput(session, "thematicGroupings", selected = "No Constraint")
-    }
-  }, ignoreInit = TRUE)
   
-  observeEvent(input$thematicGroupings, {
-    if (input$thematicGroupings != "No Constraint") {
-      updateSelectInput(session, "naicsConstraint", selected = "No Constraint")
-    }
-  }, ignoreInit = TRUE)
   
   
   # Filtered NAICS choices based on Thematic Constraints, NAICS Constraint, and selected Indicator
   filteredNAICS <- reactive({
-    if (input$thematicGroupings != "No Constraint") {
-      data %>%
-        filter(NAICS_Code %in% thematicNAICS(),
-               Indicator == getCurrentIndicator())
-    } else if (naicsConstraintCode() != "") {
+    if (naicsConstraintCode() != "") {
       data %>%
         filter(str_starts(NAICS_Code, naicsConstraintCode()),
                Indicator == getCurrentIndicator())
@@ -2156,13 +2236,13 @@ server <- function(input, output, session) {
   applyingChartCode <- reactiveVal(FALSE)
   
   # Modify your existing observer that was causing issues - completely remove the indicator as a trigger
-  observeEvent(c(naicsConstraintCode(), input$thematicGroupings), {
+  observeEvent(naicsConstraintCode(), {
     # Skip if we're currently applying a chart code
     if(applyingChartCode()) {
       return()
     }
     
-    message("NAICS filter update from constraint or thematic grouping change")
+    message("NAICS filter update from constraint change")
     new_choices <- unique(filteredNAICS()$index_col)
     
     # Try to use the last valid selection if it exists in new choices
@@ -2625,7 +2705,7 @@ server <- function(input, output, session) {
   # Reactive expression for the chart title
   chartTitle <- reactive({
     if(input$finishedVisualizationTitle == "") {
-      "Finished Visualization"
+      "Multi-Series Viewer"
     } else {
       input$finishedVisualizationTitle
     }
@@ -3228,45 +3308,6 @@ server <- function(input, output, session) {
     updateTabsetPanel(session, "investmentNav", selected = "Structures Investment")
   })
   
-  # Update your existing code to use getCurrentDataset() and getCurrentIndicator()
-  # instead of getCurrentDataset() and getCurrentIndicator()
-  
-  
-  # Update your filteredNAICS reactive
-  filteredNAICS <- reactive({
-    if (input$thematicGroupings != "No Constraint") {
-      data %>%
-        filter(NAICS_Code %in% thematicNAICS(),
-               Indicator == getCurrentIndicator())
-    } else if (naicsConstraintCode() != "") {
-      data %>%
-        filter(str_starts(NAICS_Code, naicsConstraintCode()),
-               Indicator == getCurrentIndicator())
-    } else {
-      data %>%
-        filter(Indicator == getCurrentIndicator())
-    }
-  })
-  
-  #  Text output
-  output$indicatorDescription <- renderText({
-    if (getCurrentIndicator() == "Industrial Production") {
-      "The G.17 Industrial Production and Capacity Utilization report is a monthly publication by the Federal Reserve Board that produces an index designed to measure the real output of the manufacturing, mining, and electric and gas utilities industries in the United States. It is released monthly at https://www.federalreserve.gov/releases/g17/default.htm . This data is useful for understanding the level and composition of domestic industrial production in the United States. All data are reported as indices initially benchmarked to January 1 2020."
-    } else if (getCurrentIndicator() == "Producer Price Index") {
-      "The Producer Price Index statistics are designed to measure changes in the prices paid for upstream inputs by domestic firms. They are produced monthly by the Bureau of Labor Statistics and can be found at: https://www.bls.gov/mxp/ . This data is useful for understanding changes in the price of input costs for domestic producers. All data are reported as indices initially benchmarked to January 1 2020."
-    } else if (getCurrentIndicator() == "Import Price Index") {
-      "The Import Price Index statistics are designed to measure changes in the prices paid for imports by category of good. They are produced monthly by the Bureau of Labor Statistics and can be found at: https://www.bls.gov/mxp/ . This data is useful for understanding changes in the price of foreign-produced goods. All data are reported as indices initially benchmarked to January 1 2020."
-    } else if (getCurrentIndicator() == "Nominal Imports") {
-      "This data is an index of the level of nominal imports, where measures of dollar values are produced by the Census Bureau. New releases can be found monthly at https://usatrade.census.gov/ . This data is useful for understanding changes in the total amount paid from month to month for imports of specific goods. All data are reported as indices initially benchmarked to January 1 2020."
-    } else if (getCurrentIndicator() == "IPI-Adjusted Imports") {
-      "This data is compiled specifically for this viewer, using the Census Bureau's data on nominal imports and the Bureau of Labor Statistics data on Import Prices. The index of Nominal Imports is deflated by the index for Import Prices to create an inflation-adjusted index of imports. This index is more accurate than the index of PPI-Adjusted Imports, but at the cost of more limited data coverage. All data are reported as indices initially benchmarked to January 1 2020."
-    } else if (getCurrentIndicator() == "PPI-Adjusted Imports") {
-      "This data is compiled specifically for this viewer, using the Census Bureau's data on nominal imports and the Bureau of Labor Statistics data on US Domestic Producer Prices. The index of Nominal Imports is deflated by the index for domestic Producer Prices to create an inflation-adjusted index of imports. This index is less accurate than the index of IPI-Adjusted Imports, but has the benefit of broader data coverage. All data are reported as indices initially benchmarked to January 1 2020."
-    } else {
-      "No description available for the selected indicator."
-    }
-  })
-  
   
   
   # Reset inputs to default values
@@ -3277,7 +3318,6 @@ server <- function(input, output, session) {
                          end = Sys.Date())
     
     # Reset filters
-    updatePickerInput(session, "thematicGroupings", selected = "No Constraint")
     updatePickerInput(session, "naicsConstraint", selected = "No Constraint")
     updatePickerInput(session, "naicsIndex", choices = unique(filteredNAICS()$index_col), 
                       selected = unique(filteredNAICS()$index_col)[1])
