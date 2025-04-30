@@ -902,11 +902,11 @@ ui <- fluidPage(
     column(width = 9,
            # First chart - Data Finder
            div(class = "chart-container",
-               plotlyOutput("lineChart", height = "625px")
+               plotlyOutput("lineChart", height = "650px")
            ),
            
            # Add the new information box here
-           div(class = "naics-description-box", style = "max-height: 245px; margin-top: 15px; margin-bottom: 20px;",
+           div(class = "naics-description-box", style = "max-height: 300px; margin-top: 15px; margin-bottom: 20px;",
                htmlOutput("dataInformationBox")
            )
     )
@@ -1148,17 +1148,13 @@ server <- function(input, output, session) {
     
     # Create HTML output
     tagList(
-      # New section for Recent Readings
       tags$p(
         tags$strong("Recent Readings:")
       ),
+      # Combined Recent Readings section (all on one line)
       tags$p(
-        tags$strong(most_recent_date, ": "), most_recent_value
-      ),
-      tags$p(
-        tags$strong(prior_month_date, ": "), prior_month_value
-      ),
-      tags$p(
+        tags$strong(most_recent_date, ": "), most_recent_value, ", ",
+        tags$strong(prior_month_date, ": "), prior_month_value, ", ",
         tags$strong(year_ago_date, ": "), year_ago_value
       ),
       
