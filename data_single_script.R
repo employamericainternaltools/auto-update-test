@@ -96,12 +96,12 @@ naics_lookup <- setNames(naics_dict$name, naics_dict$code)
       "37" = "Hours",
       "38" = "Ratio",
       "39" = "Ratio",
-      "56" = "Thousands of Employees",
-      "57" = "Thousands of Employees",
-      "58" = "Thousands of Employees",
-      "81" = "Thousands of Employees",
-      "82" = "Thousands of Employees",
-      "83" = "Thousands of Employees"
+      "56" = "Hours",
+      "57" = "Dollars",
+      "58" = "Hours",
+      "81" = "Hours",
+      "82" = "Dollars",
+      "83" = "Hours"
     )
     
     # URL of the data
@@ -158,13 +158,20 @@ naics_lookup <- setNames(naics_dict$name, naics_dict$code)
       ) %>%
       filter(trimws(NAICS_Code) != "")
     
+    bls_data <- bls_data %>%
+      mutate(
+        # Check if Units is "Thousands of Employees"
+        Value = ifelse(Units == "Thousands of Employees", Value * 1000, Value),
+        # Update Units label for those records
+        Units = ifelse(Units == "Thousands of Employees", "Employees", Units)
+      )
+    
     # Save the dataframe as an RDS file (R's native format for storing single objects)
     CES_tidy <- bls_data
   }
 
 # Exports Ingestion
 {
-
   
   # Define the API endpoint URL
   api_url <- "https://api.census.gov/data/timeseries/intltrade/exports/naics"
@@ -194,14 +201,18 @@ naics_lookup <- setNames(naics_dict$name, naics_dict$code)
   # Create a new Date column
   df$Date <- ymd(paste(df$YEAR, df$MONTH, "01", sep = "-"))
   
-  # Reorder columns to put Date first
+  # Reorder columns and process NAICS codes
   df <- df %>%
     select(Date, NAICS, ALL_VAL_MO) %>%
     rename(
       NAICS_Code = NAICS,
       Value = ALL_VAL_MO
     ) %>%
+    # Remove rows with NAICS_Code "31-33" or containing "X"
+    filter(NAICS_Code != "31-33" & !grepl("X", NAICS_Code)) %>%
+    # Replace "-" with "0" in NAICS_Code
     mutate(
+      NAICS_Code = ifelse(NAICS_Code == "-", "0", NAICS_Code),
       Dataset = "International Trade",
       Units = "Dollars",
       Indicator = "Exports",
@@ -212,6 +223,79 @@ naics_lookup <- setNames(naics_dict$name, naics_dict$code)
   
   Exports_tidy <- df
   
+}
+
+# Imports Ingestion
+{
+  # Define the API endpoint URL
+  api_url <- "https://api.census.gov/data/timeseries/intltrade/imports/naics"
+  
+  # Define query parameters
+  params <- list(
+    get = "MONTH,YEAR,NAICS,GEN_VAL_MO"
+  )
+  
+  # Make the API request
+  response <- GET(url = api_url, query = params)
+  
+  # Parse the JSON content
+  data <- fromJSON(content(response, "text"), flatten = TRUE)
+  
+  # Convert to a dataframe
+  df <- as.data.frame(data[-1,])  # Remove the first row (column names)
+  colnames(df) <- data[1,]  # Set column names from the first row
+  rm(data, response)
+  
+  # Convert columns to appropriate data types
+  df$MONTH <- as.integer(df$MONTH)
+  df$YEAR <- as.integer(df$YEAR)
+  df$NAICS <- as.character(df$NAICS)
+  df$GEN_VAL_MO <- as.numeric(df$GEN_VAL_MO)
+  
+  # Create a new Date column
+  df$Date <- ymd(paste(df$YEAR, df$MONTH, "01", sep = "-"))
+  
+  # Reorder columns and process NAICS codes
+  df <- df %>%
+    select(Date, NAICS, GEN_VAL_MO) %>%
+    rename(
+      NAICS_Code = NAICS,
+      Value = GEN_VAL_MO
+    ) %>%
+    # Remove rows with NAICS_Code "31-33" or containing "X"
+    filter(NAICS_Code != "31-33" & !grepl("X", NAICS_Code)) %>%
+    # Replace "-" with "0" in NAICS_Code
+    mutate(
+      NAICS_Code = ifelse(NAICS_Code == "-", "0", NAICS_Code),
+      Dataset = "International Trade",
+      Indicator = "Imports",
+      Units = "Dollars",
+      NAICS_Name = naics_lookup[NAICS_Code],
+      seasonal_adjustment = FALSE
+    ) %>%
+    select(Date, Dataset, Indicator, NAICS_Name, NAICS_Code, Units, seasonal_adjustment, Value)
+  
+  Imports_tidy <- df
+  
+}
+
+# Create Trade Balance dataset
+{
+  # Join Exports and Imports datasets on Date and NAICS_Code
+  Balance_tidy <- Exports_tidy %>%
+    inner_join(
+      Imports_tidy,
+      by = c("Date", "NAICS_Code", "NAICS_Name", "Dataset", "seasonal_adjustment"),
+      suffix = c("_exports", "_imports")
+    ) %>%
+    # Calculate the trade balance (Exports - Imports)
+    mutate(
+      Indicator = "Trade Balance",
+      Units = "Dollars",
+      Value = Value_exports - Value_imports
+    ) %>%
+    # Select and reorder columns to match the standard structure
+    select(Date, Dataset, Indicator, NAICS_Name, NAICS_Code, Units, seasonal_adjustment, Value)
 }
 
 # G17 Ingestion
@@ -354,6 +438,10 @@ naics_lookup <- setNames(naics_dict$name, naics_dict$code)
     distinct(NAICS_Code, .keep_all = TRUE) %>% # Keep only the first occurrence of each NAICS code
     select(series_id, NAICS_Code)  
   
+  #add the Aggregate
+  crosswalk_df <- crosswalk_df %>%
+    add_row(series_id = "B50001", NAICS_Code = "0")
+  
   # Step 17: Join NAICS codes to main dataframe
   df_long <- df_long %>%
     left_join(crosswalk_df, by = "series_id") %>%
@@ -378,59 +466,15 @@ naics_lookup <- setNames(naics_dict$name, naics_dict$code)
       TRUE ~ NA_character_  # Default to NA if no match
     ))
   
+  # Divide values by 100 for rows with Units = "Percentage" 
+  df_long <- df_long %>%
+    mutate(
+      Value = ifelse(Units == "Percentage", Value / 100, Value)
+    )
+  
   # Final selection and ordering of columns
   G17_tidy <- df_long %>%
     select(Date, Dataset, Indicator, Units, NAICS_Name, NAICS_Code, seasonal_adjustment, Value)}
-
-# Imports Ingestion
-{
-  # Define the API endpoint URL
-  api_url <- "https://api.census.gov/data/timeseries/intltrade/imports/naics"
-  
-  # Define query parameters
-  params <- list(
-    get = "MONTH,YEAR,NAICS,GEN_VAL_MO"
-  )
-  
-  # Make the API request
-  response <- GET(url = api_url, query = params)
-  
-  # Parse the JSON content
-  data <- fromJSON(content(response, "text"), flatten = TRUE)
-  
-  # Convert to a dataframe
-  df <- as.data.frame(data[-1,])  # Remove the first row (column names)
-  colnames(df) <- data[1,]  # Set column names from the first row
-  rm(data, response)
-  
-  # Convert columns to appropriate data types
-  df$MONTH <- as.integer(df$MONTH)
-  df$YEAR <- as.integer(df$YEAR)
-  df$NAICS <- as.character(df$NAICS)
-  df$GEN_VAL_MO <- as.numeric(df$GEN_VAL_MO)
-  
-  # Create a new Date column
-  df$Date <- ymd(paste(df$YEAR, df$MONTH, "01", sep = "-"))
-  
-  # Reorder columns to put Date first
-  df <- df %>%
-    select(Date, NAICS, GEN_VAL_MO) %>%
-    rename(
-      NAICS_Code = NAICS,
-      Value = GEN_VAL_MO
-    ) %>%
-    mutate(
-      Dataset = "International Trade",
-      Indicator = "Imports",
-      Units = "Dollars",
-      NAICS_Name = naics_lookup[NAICS_Code],
-      seasonal_adjustment = FALSE
-    ) %>%
-    select(Date, Dataset, Indicator, NAICS_Name, NAICS_Code, Units, seasonal_adjustment, Value)
-  
-  Imports_tidy <- df
-  
-}
 
 # Investment Ingestion
 {
@@ -438,9 +482,24 @@ naics_lookup <- setNames(naics_dict$name, naics_dict$code)
   # URL of the file
   url <- "https://apps.bea.gov/national/Release/TXT/NipaDataQ.txt"
   
+  df <- read_csv(url,
+                 col_types = cols(.default = col_character()),  # Read everything as character first
+                 quote = "\"",
+                 trim_ws = TRUE)
+  
+  df <- df %>%
+    # Rename %SeriesCode to X.SeriesCode
+    rename(X.SeriesCode = `%SeriesCode`) %>%
+    mutate(
+      # Remove commas from Value column
+      Value = gsub(",", "", Value),
+      # Convert to numeric
+      Value = as.numeric(Value)
+    )
+  
   # Read the file directly from the URL into a dataframe
-  df <- read.csv(url, header = TRUE, quote = "\"", sep = ",", 
-                 stringsAsFactors = FALSE)
+#  df <- read.csv(url, header = TRUE, quote = "\"", sep = ",", 
+#                 stringsAsFactors = FALSE)
   
   # Parse the "Period" column
   df$Date <- parse_date_time(df$Period, "yq")
@@ -458,7 +517,8 @@ naics_lookup <- setNames(naics_dict$name, naics_dict$code)
       seasonal_adjustment = FALSE
     ) %>%
     select(Date, Dataset, Indicator, NAICS_Name, NAICS_Code, Units, seasonal_adjustment, Value) %>%
-    mutate(Value = parse_number(Value))
+#    mutate(Value = parse_number(Value)) %>%
+    mutate(Value = Value *1000000)
   
   Investment_tidy <- df_filtered %>%
     group_by(Indicator) %>%
@@ -840,6 +900,13 @@ naics_lookup <- setNames(naics_dict$name, naics_dict$code)
     select(Date, Dataset, Indicator, NAICS_Name, NAICS_Code, Units, seasonal_adjustment, Value) %>%
     mutate(NAICS_Code = as.character(NAICS_Code))
   
+  # Convert "thousands of dollars" to "dollars" by multiplying by 1000
+  combined_df <- combined_df %>%
+    mutate(
+      Value = ifelse(Units == "Thousands of Dollars", Value * 1000, Value),
+      Units = ifelse(Units == "Thousands of Dollars", "Dollars", Units)
+    )
+  
   m3_tidy <- combined_df
   
 }
@@ -848,13 +915,14 @@ naics_lookup <- setNames(naics_dict$name, naics_dict$code)
 # Everything above has units, now let's add to everything below
 
 
-
-
+# All the computed 
+{
 
 #Binding the Supply Chain Monitor Dataset
 data <- bind_rows(
   Imports_tidy %>% mutate(NAICS_Code = as.character(NAICS_Code)),
   Exports_tidy %>% mutate(NAICS_Code = as.character(NAICS_Code)),
+  Balance_tidy %>% mutate(NAICS_Code = as.character(NAICS_Code)),
   G17_tidy %>% mutate(NAICS_Code = as.character(NAICS_Code)),
   IPI_tidy %>% mutate(NAICS_Code = as.character(NAICS_Code)),
   EPI_tidy %>% mutate(NAICS_Code = as.character(NAICS_Code)),
@@ -885,7 +953,7 @@ merged_data <- merged_data %>%
 result <- merged_data %>%
   select(Date, Dataset_Nominal, NAICS_Name_Nominal, NAICS_Code, seasonal_adjustment_Nominal, Inflation_Adjusted_Imports) %>%
   mutate(Indicator = "PPI-Deflated Imports",
-         Units = "Nominal, PPI Indexed to Dec 2024"
+         Units = "Dollars, PPI Indexed to Dec 2024"
         ) %>%
   rename(Value = Inflation_Adjusted_Imports,
          seasonal_adjustment = seasonal_adjustment_Nominal,
@@ -911,7 +979,7 @@ merged_data <- merged_data %>%
 result <- merged_data %>%
   select(Date, Dataset_Nominal, NAICS_Name_Nominal, NAICS_Code, seasonal_adjustment_Nominal, Inflation_Adjusted_Imports) %>%
   mutate(Indicator = "IPI-Deflated Imports",
-         Units = "Nominal, IPI Indexed to Dec 2024") %>%
+         Units = "Dollars, IPI Indexed to Dec 2024") %>%
   rename(Value = Inflation_Adjusted_Imports,
          seasonal_adjustment = seasonal_adjustment_Nominal,
          Dataset = Dataset_Nominal,
@@ -936,7 +1004,7 @@ merged_data <- merged_data %>%
 result <- merged_data %>%
   select(Date, Dataset_Nominal, NAICS_Name_Nominal, NAICS_Code, seasonal_adjustment_Nominal, Inflation_Adjusted_Exports) %>%
   mutate(Indicator = "PPI-Adjusted Exports",
-         Units = "Nominal, PPI Indexed to Dec 2024") %>%
+         Units = "Dollars, PPI Indexed to Dec 2024") %>%
   rename(Value = Inflation_Adjusted_Exports,
          seasonal_adjustment = seasonal_adjustment_Nominal,
          Dataset = Dataset_Nominal,
@@ -961,7 +1029,7 @@ merged_data <- merged_data %>%
 result <- merged_data %>%
   select(Date, Dataset_Nominal, NAICS_Name_Nominal, NAICS_Code, seasonal_adjustment_Nominal, Inflation_Adjusted_Exports) %>%
   mutate(Indicator = "EPI-Adjusted Exports",
-         Units = "Nominal, EPI Indexed to Dec 2024") %>%
+         Units = "Dollars, EPI Indexed to Dec 2024") %>%
   rename(Value = Inflation_Adjusted_Exports,
          seasonal_adjustment = seasonal_adjustment_Nominal,
          Dataset = Dataset_Nominal,
@@ -975,7 +1043,7 @@ data <- data %>%
 
 # Create the new index column
 data$index_col <- paste(data$NAICS_Code, "-", data$NAICS_Name)
-
+}
 # Add Axis_Type column and Combined column to prevent issues
 data$Axis_Type <- as.character("")
 
