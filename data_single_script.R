@@ -456,20 +456,20 @@ naics_lookup <- setNames(naics_dict$name, naics_dict$code)
   df_long <- df_long %>%
     mutate(Units = case_when(
       Indicator == "Industrial Production" ~ "Index, 2017 = 100",
-      Indicator == "Capacity Utilization" ~ "Percentage",
+      Indicator == "Capacity Utilization" ~ "Percent",
       Indicator == "Capacity" ~ "Index, 2017 = 100",
       Indicator == "Gross Value of Products" ~ "Dollars",
       Indicator == "1-Month Diffusion Index" ~ "Index",
       Indicator == "3-Month Diffusion Index" ~ "Index",
       Indicator == "6-Month Diffusion Index" ~ "Index",
-      Indicator == "Relative Importance Weights" ~ "Percentage",
+      Indicator == "Relative Importance Weights" ~ "Percent",
       TRUE ~ NA_character_  # Default to NA if no match
     ))
   
-  # Divide values by 100 for rows with Units = "Percentage" 
+  # Divide values by 100 for rows with Units = "Percent" 
   df_long <- df_long %>%
     mutate(
-      Value = ifelse(Units == "Percentage", Value / 100, Value)
+      Value = ifelse(Units == "Percent", Value / 100, Value)
     )
   
   # Final selection and ordering of columns
@@ -911,10 +911,6 @@ naics_lookup <- setNames(naics_dict$name, naics_dict$code)
   
 }
 
-
-# Everything above has units, now let's add to everything below
-
-
 # All the computed 
 {
 
@@ -1050,6 +1046,14 @@ data$Axis_Type <- as.character("")
 data$Combined = as.character("")
 
 data$Date <- as.Date(data$Date)
+
+# Remove rows where NAICS_Code matches any value in the list
+data <- data %>%
+  filter(!(NAICS_Code %in% c("31", "32", "33", "NA", "MANU", "NONMAN", 
+                             "329", "3291", "32911", "329111", "32914", "3299",
+                             "911", "91622", "91911", "91912", "919999", 
+                             "921611", "922622", "92292", "922999", "931611",
+                             "932", "932221", "93248", "932622", "93292", "932999")))
 
 # Original .RData format for existing code
 save(data, file = "data_index.RData")
