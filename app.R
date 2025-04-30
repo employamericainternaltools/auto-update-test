@@ -654,6 +654,7 @@ ui <- fluidPage(
                 tabsetPanel(id = "internationalTradeNav", type = "tabs",
                             tabPanel("Imports", value = "Imports"),
                             tabPanel("Exports", value = "Exports"),
+                            tabPanel("Trade Balance", value = "Trade Balance"),  # Add this line
                             tabPanel("PPI-Adjusted Imports", value = "PPI-Deflated Imports"),
                             tabPanel("IPI-Adjusted Imports", value = "IPI-Deflated Imports"),
                             tabPanel("PPI-Adjusted Exports", value = "PPI-Adjusted Exports"),
@@ -1233,10 +1234,11 @@ server <- function(input, output, session) {
       "1" = list(
         "Imports" = 1,
         "Exports" = 2,
-        "PPI-Deflated Imports" = 3,
-        "IPI-Deflated Imports" = 4,
-        "PPI-Adjusted Exports" = 5,
-        "EPI-Adjusted Exports" = 6
+        "Trade Balance" = 3,  # Add this line
+        "PPI-Deflated Imports" = 4,  # Updated from 3
+        "IPI-Deflated Imports" = 5,  # Updated from 4
+        "PPI-Adjusted Exports" = 6,  # Updated from 5
+        "EPI-Adjusted Exports" = 7   # Updated from 6
       ),
       # Dataset 2: Production and Capacity
       "2" = list(
