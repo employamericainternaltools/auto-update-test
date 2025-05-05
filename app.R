@@ -694,17 +694,24 @@ ui <- fluidPage(
       ),
       
       # Sub Navigation for Current Employment Statistics
+      # Sub Navigation for Current Employment Statistics
       conditionalPanel(
         condition = "input.datasetNav == 'Current Employment Statistics'",
         div(class = "sub-navbar",
             div(class = "container-fluid",
                 tabsetPanel(id = "employmentStatsNav", type = "tabs",
                             tabPanel("All Employees", value = "All Employees"),
-                            tabPanel("Women Employees", value = "Women Employees"),
+                            tabPanel("Average Weekly Hours of All Employees", 
+                                     value = "Average Weekly Hours of All Employees"),
                             tabPanel("Average Hourly Earnings of All Employees", 
                                      value = "Average Hourly Earnings of All Employees"),
-                            tabPanel("Average Weekly Hours of All Employees", 
-                                     value = "Average Weekly Hours of All Employees")
+                            tabPanel("Production and Nonsupervisory Employees", 
+                                     value = "Production and Nonsupervisory Employees"),
+                            tabPanel("Average Weekly Hours of Production and Nonsupervisory Employees", 
+                                     value = "Average Weekly Hours of Production and Nonsupervisory Employees"),
+                            tabPanel("Average Hourly Earnings of Production and Nonsupervisory Employees", 
+                                     value = "Average Hourly Earnings of Production and Nonsupervisory Employees"),
+                            tabPanel("Women Employees", value = "Women Employees")
                 )
             )
         )
@@ -903,11 +910,11 @@ ui <- fluidPage(
     column(width = 9,
            # First chart - Data Finder
            div(class = "chart-container",
-               plotlyOutput("lineChart", height = "650px")
+               plotlyOutput("lineChart", height = "670px")
            ),
            
            # Add the new information box here
-           div(class = "naics-description-box", style = "max-height: 300px; margin-top: 15px; margin-bottom: 20px;",
+           div(class = "naics-description-box", style = "max-height: 315px; margin-top: 15px; margin-bottom: 20px;",
                htmlOutput("dataInformationBox")
            )
     )
@@ -1256,9 +1263,12 @@ server <- function(input, output, session) {
       # Dataset 4: Current Employment Statistics
       "4" = list(
         "All Employees" = 1,
-        "Women Employees" = 2,
+        "Average Weekly Hours of All Employees" = 2,
         "Average Hourly Earnings of All Employees" = 3,
-        "Average Weekly Hours of All Employees" = 4
+        "Production and Nonsupervisory Employees" = 4,
+        "Average Weekly Hours of Production and Nonsupervisory Employees" = 5,
+        "Average Hourly Earnings of Production and Nonsupervisory Employees" = 6,
+        "Women Employees" = 7
       ),
       # Dataset 5: M3 Manufacturers
       "5" = list(
