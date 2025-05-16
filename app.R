@@ -1045,6 +1045,13 @@ ui <- fluidPage(
 
 # Define server logic
 server <- function(input, output, session) {
+
+  # Add this to your server function after you've defined the outputs
+outputOptions(output, "lineChart", suspendWhenHidden = FALSE)
+outputOptions(output, "dataInformationBox", suspendWhenHidden = FALSE)
+
+# And specifically for hiding error messages:
+options(shiny.sanitize.errors = TRUE)
   
   # First, add these lines near the top of your server function where you load data
   # Load additional description files
