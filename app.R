@@ -2507,11 +2507,17 @@ server <- function(input, output, session) {
           updateCheckboxInput(session, "useSeasonalAdjustment", value = FALSE)
         }
       }
-    } else {
-      # If seasonal adjustment not requested, use non-seasonally adjusted data
-      filtered <- filtered %>%
-        filter(seasonal_adjustment == FALSE)
-    }
+} else {
+  # If seasonal adjustment not requested, use non-seasonally adjusted data
+  filtered <- filtered %>%
+    filter(seasonal_adjustment == FALSE)
+  
+  # Add "Not Seasonally Adjusted" to the transform name
+  filtered <- filtered %>%
+    mutate(Transform_Name = if_else(Transform_Name == "", 
+                                   "Not Seasonally Adjusted", 
+                                   paste(Transform_Name, "Not Seasonally Adjusted", sep = ", ")))
+}
     
     # Apply indexing if useIndexDate is TRUE
     if (input$useIndexDate) {
