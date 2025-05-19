@@ -3630,33 +3630,34 @@ dataNavigatorTitle <- reactive({
   
   
   
-  # Reset inputs to default values
-  observeEvent(input$resetInputs, {
-    # Update the date range input
-    updateDateRangeInput(session, "dateRange", 
-                         start = as.Date("1900-01-01"),
-                         end = Sys.Date())
-    
-    # Reset filters
-    updatePickerInput(session, "naicsConstraint", selected = "No Constraint")
-    updatePickerInput(session, "naicsIndex", choices = unique(filteredNAICS()$index_col), 
-                      selected = unique(filteredNAICS()$index_col)[1])
-    updatePickerInput(session, "datasetDropdown", selected = unique(data$Dataset)[1])
-    updatePickerInput(session, "indicatorDropdown", selected = unique(data$Indicator)[1])
-    updateCheckboxInput(session, "showSubIndustries", value = FALSE)
-    updateCheckboxInput(session, "showAllSeries", value = FALSE)
-    
-    # Reset transforms
-    updateCheckboxInput(session, "useIndexDate", value = FALSE)
-    updateSelectInput(session, "movingAverageTransform", selected = "No Transform")
-    updateSelectInput(session, "changeTransform", selected = "No Transform")
-    updateSelectInput(session, "percentChangeTransform", selected = "No Transform")
-    updateSelectInput(session, "cagrTransform", selected = "No Transform")
-    
-    # Reset visualization settings
-    updateNumericInput(session, "xLabelFreq", value = 3)
-    updateNumericInput(session, "storedXLabelFreq", value = 3)
-  })
+# Reset inputs to default values
+observeEvent(input$resetInputs, {
+  # Update the date range input
+  updateDateRangeInput(session, "dateRange", 
+                       start = as.Date("1900-01-01"),
+                       end = Sys.Date())
+  
+  # Reset filters
+  updatePickerInput(session, "naicsConstraint", selected = "No Constraint")
+  updatePickerInput(session, "naicsIndex", choices = unique(filteredNAICS()$index_col), 
+                    selected = unique(filteredNAICS()$index_col)[1])
+  updatePickerInput(session, "datasetDropdown", selected = unique(data$Dataset)[1])
+  updatePickerInput(session, "indicatorDropdown", selected = unique(data$Indicator)[1])
+  updateCheckboxInput(session, "showSubIndustries", value = FALSE)
+  updateCheckboxInput(session, "showAllSeries", value = FALSE)
+  updateCheckboxInput(session, "useSeasonalAdjustment", value = FALSE)  # Added this line
+  
+  # Reset transforms
+  updateCheckboxInput(session, "useIndexDate", value = FALSE)
+  updateSelectInput(session, "movingAverageTransform", selected = "No Transform")
+  updateSelectInput(session, "changeTransform", selected = "No Transform")
+  updateSelectInput(session, "percentChangeTransform", selected = "No Transform")
+  updateSelectInput(session, "cagrTransform", selected = "No Transform")
+  
+  # Reset visualization settings
+  updateNumericInput(session, "xLabelFreq", value = 3)
+  updateNumericInput(session, "storedXLabelFreq", value = 3)
+})
 }
 
 #Run the application
