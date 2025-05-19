@@ -3429,84 +3429,100 @@ dataNavigatorTitle <- reactive({
     panelCollapsed(TRUE)
   })
   
-  # Add this as a standalone function in your server
-  output$downloadCurrentData <- downloadHandler(
-    filename = function() {
-      timestamp <- format(Sys.time(), "%Y-%m-%d_%H%M%S")
-      return(paste0("data_viewer_data_", timestamp, ".csv"))
-    },
-    content = function(file) {
-      # Safely capture the filtered data 
-      current_data <- filteredData()
-      
-      # Create export version with formatted columns
-      data_to_export <- current_data %>%
-        ungroup() %>%
-        # Create a user-friendly Series identifier
-        mutate(Series = paste0(
-          Indicator, " for NAICS ", NAICS_Code, ": ", NAICS_Name,
-          ifelse(Transform_Name != "", paste0(", ", Transform_Name), ""),
-          " (", Units, ")"
-        )) %>%
-        # Format date as Excel-friendly
-        mutate(Date = format(Date, "%Y-%m-%d")) %>%
-        # Select only the needed columns
-        select(Date, Series, Value)
-      
-      # Pivot to wide format
-      wide_data <- tidyr::pivot_wider(
-        data = data_to_export,
-        names_from = Series,
-        values_from = Value
-      )
-      
-      # Write to CSV file
-      write.csv(wide_data, file, row.names = FALSE)
+ # Update downloadCurrentData handler
+output$downloadCurrentData <- downloadHandler(
+  filename = function() {
+    timestamp <- format(Sys.time(), "%Y-%m-%d_%H%M%S")
+    return(paste0("data_viewer_data_", timestamp, ".csv"))
+  },
+  content = function(file) {
+    # Safely capture the filtered data 
+    current_data <- filteredData()
+    
+    # Create export version with formatted columns
+    data_to_export <- current_data %>%
+      ungroup() %>%
+      # Create a user-friendly Series identifier
+      mutate(Series = paste0(
+        Indicator, " for NAICS ", NAICS_Code, ": ", NAICS_Name,
+        ifelse(Transform_Name != "", paste0(", ", Transform_Name), ""),
+        " (", Units, ")"
+      )) %>%
+      # Format date as Excel-friendly
+      mutate(Date = format(Date, "%Y-%m-%d")) %>%
+      # Select only the needed columns
+      select(Date, Series, Value)
+    
+    # Pivot to wide format
+    wide_data <- tidyr::pivot_wider(
+      data = data_to_export,
+      names_from = Series,
+      values_from = Value
+    )
+    
+    # Create a file connection to write to
+    con <- file(file, "w")
+    
+    # Write header row
+    writeLines("Data downloaded from the Industry Data Navigator", con)
+    
+    # Write the wide-format data to the CSV file
+    write.csv(wide_data, con, row.names = FALSE)
+    
+    # Close the connection
+    close(con)
+  }
+)
+
+# Update downloadStoredData handler
+output$downloadStoredData <- downloadHandler(
+  filename = function() {
+    # Create a timestamp in format YYYY-MM-DD_HHMMSS
+    timestamp <- format(Sys.time(), "%Y-%m-%d_%H%M%S")
+    paste0("final_visualization_data_", timestamp, ".csv")
+  },
+  content = function(file) {
+    data_to_export <- storedData() %>%
+      ungroup() %>%
+      # Create a user-friendly Series identifier like in the legend
+      mutate(Series = paste0(
+        Indicator, " for NAICS ", NAICS_Code, ": ", NAICS_Name,
+        ifelse(Transform_Name != "", paste0(", ", Transform_Name), ""),
+        " (", Units, ")"  # Append units in parentheses
+      )) %>%
+      # Format date as Excel-friendly (YYYY-MM-DD)
+      mutate(Date = format(Date, "%Y-%m-%d")) %>%
+      # Select only the needed columns
+      select(Date, Series, Value)
+    
+    # Pivot the data from long to wide format
+    wide_data <- data_to_export %>%
+      pivot_wider(names_from = Series, values_from = Value)
+    
+    # Add the horizontal line value if it's enabled
+    if(input$addHorizontalLine == TRUE) {
+      wide_data$`User Horizontal Line` <- input$horizontalLineValue
     }
-  )
-  
-  #  Download handler for stored data
-  # Update this block
-  output$downloadStoredData <- downloadHandler(
-    filename = function() {
-      # Create a timestamp in format YYYY-MM-DD_HHMMSS
-      timestamp <- format(Sys.time(), "%Y-%m-%d_%H%M%S")
-      paste0("final_visualization_data_", timestamp, ".csv")
-    },
-    content = function(file) {
-      # Rest of your download handler code remains the same
-      data_to_export <- storedData() %>%
-        ungroup() %>%
-        # Create a user-friendly Series identifier like in the legend
-        mutate(Series = paste0(
-          Indicator, " for NAICS ", NAICS_Code, ": ", NAICS_Name,
-          ifelse(Transform_Name != "", paste0(", ", Transform_Name), ""),
-          " (", Units, ")"  # Append units in parentheses
-        )) %>%
-        # Format date as Excel-friendly (YYYY-MM-DD)
-        mutate(Date = format(Date, "%Y-%m-%d")) %>%
-        # Select only the needed columns
-        select(Date, Series, Value)
-      
-      # Pivot the data from long to wide format
-      wide_data <- data_to_export %>%
-        pivot_wider(names_from = Series, values_from = Value)
-      
-      # Add the horizontal line value if it's enabled
-      if(input$addHorizontalLine == TRUE) {
-        wide_data$`User Horizontal Line` <- input$horizontalLineValue
-      }
-      
-      # Add the vertical line date if it's enabled
-      if(input$addVerticalLine == TRUE) {
-        vertical_line_date <- as.Date(format(input$verticalLineDate, "%Y-%m-01"))
-        wide_data$`User Vertical Line` <- format(vertical_line_date, "%Y-%m-%d")
-      }
-      
-      # Write the wide-format data to a CSV file
-      write.csv(wide_data, file, row.names = FALSE)
+    
+    # Add the vertical line date if it's enabled
+    if(input$addVerticalLine == TRUE) {
+      vertical_line_date <- as.Date(format(input$verticalLineDate, "%Y-%m-01"))
+      wide_data$`User Vertical Line` <- format(vertical_line_date, "%Y-%m-%d")
     }
-  )
+    
+    # Create a file connection to write to
+    con <- file(file, "w")
+    
+    # Write header row
+    writeLines("Data downloaded from the Industry Data Navigator", con)
+    
+    # Write the wide-format data to the CSV file
+    write.csv(wide_data, con, row.names = FALSE)
+    
+    # Close the connection
+    close(con)
+  }
+)
   
   #  Render series manager UI
   # Render the UI for managing stored series, including color pickers
