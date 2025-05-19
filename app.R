@@ -1069,12 +1069,46 @@ dataNavigatorTitle <- reactive({
   }
   
   # Create title in the same format as the legend
-  title <- paste0(
+  unwrapped_title <- paste0(
     currentIndicator, " for NAICS ", naicsCode, ": ", naicsName,
     transformText, seasonalText
   )
   
-  return(title)
+  # Wrap the title with a maximum width of 80 characters
+  # Function to wrap text at word boundaries
+  wrap_title <- function(text, width = 80) {
+    # Split the text into words
+    words <- strsplit(text, " ")[[1]]
+    lines <- ""
+    current_line <- ""
+    
+    for (word in words) {
+      # If adding this word would exceed the width, start a new line
+      if (nchar(current_line) + nchar(word) + 1 > width && nchar(current_line) > 0) {
+        lines <- paste0(lines, current_line, "\n")
+        current_line <- word
+      } else {
+        # Add the word to the current line
+        if (current_line == "") {
+          current_line <- word
+        } else {
+          current_line <- paste(current_line, word)
+        }
+      }
+    }
+    
+    # Add the last line
+    if (current_line != "") {
+      lines <- paste0(lines, current_line)
+    }
+    
+    return(lines)
+  }
+  
+  # Apply the wrapping
+  wrapped_title <- wrap_title(unwrapped_title, width = 80)
+  
+  return(wrapped_title)
 })
   
   # First, add these lines near the top of your server function where you load data
