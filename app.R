@@ -1045,6 +1045,37 @@ ui <- fluidPage(
 
 # Define server logic
 server <- function(input, output, session) {
+
+  # Replace the simple dataNavigatorTitle reactive with this more comprehensive one
+dataNavigatorTitle <- reactive({
+  # Get the currently selected industry
+  selectedIndustry <- input$naicsIndex
+  
+  # Get the current indicator
+  currentIndicator <- getCurrentIndicator()
+  
+  # Extract NAICS code and name
+  naicsCode <- gsub("^(\\d+).*", "\\1", selectedIndustry)
+  naicsName <- sub("^\\d+ - ", "", selectedIndustry)
+  
+  # Determine if seasonally adjusted
+  seasonalText <- if (!input$useSeasonalAdjustment) ", Not Seasonally Adjusted" else ""
+  
+  # Get transform names
+  transformText <- ""
+  transforms <- transformName()
+  if (length(transforms) > 0 && transforms != "") {
+    transformText <- paste0(", ", paste(transforms, collapse = ", "))
+  }
+  
+  # Create title in the same format as the legend
+  title <- paste0(
+    currentIndicator, " for NAICS ", naicsCode, ": ", naicsName,
+    transformText, seasonalText
+  )
+  
+  return(title)
+})
   
   # First, add these lines near the top of your server function where you load data
   # Load additional description files
@@ -2781,7 +2812,7 @@ server <- function(input, output, session) {
     # Add final layout properties
     p %>% layout(
       shapes = recession_shapes,  # Place shapes first in layout
-      title = list(text = "", font = list(size = 24)),
+      title = list(text = "dataNavigatorTitle()", font = list(size = 24)),
       xaxis = list(
         showline = TRUE,
         linewidth = 1,
