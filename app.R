@@ -2812,7 +2812,7 @@ dataNavigatorTitle <- reactive({
     # Add final layout properties
     p %>% layout(
       shapes = recession_shapes,  # Place shapes first in layout
-      title = list(text = "dataNavigatorTitle()", font = list(size = 24)),
+      title = list(text = dataNavigatorTitle(), font = list(size = 24)),
       xaxis = list(
         showline = TRUE,
         linewidth = 1,
