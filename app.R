@@ -2946,7 +2946,7 @@ dataNavigatorTitle <- reactive({
         xref = "paper",
         yref = "paper",
         x = 0.99,      # Position at 99% of the width (right side)
-        y = 0.05,      # Position at 5% from the bottom (just above x-axis)
+        y = 0.02,      # Position at 5% from the bottom (just above x-axis)
         sizex = 0.15,  # Width of the image (15% of plot width)
         sizey = 0.15,  # Height of the image proportional to width
         xanchor = "right",  # Anchor to right side
