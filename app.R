@@ -1046,6 +1046,18 @@ ui <- fluidPage(
 # Define server logic
 server <- function(input, output, session) {
 
+  # This loads the logo once when the app starts to improve performance
+logo_base64 <- reactive({
+  # Read the image file and encode it to base64
+  logo_path <- "logo.png"
+  if (file.exists(logo_path)) {
+    logo_data <- readBin(logo_path, "raw", file.info(logo_path)$size)
+    return(paste0("data:image/png;base64,", base64enc::base64encode(logo_data)))
+  } else {
+    return(NULL)  # Return NULL if file doesn't exist
+  }
+})
+
 # Add this at the beginning of your server function
 computeGlobalParameterID <- reactive({
   # Get the dataset ID
@@ -2895,67 +2907,82 @@ dataNavigatorTitle <- reactive({
     
     
     # Add final layout properties
-    p %>% layout(
-      shapes = recession_shapes,  # Place shapes first in layout
-      title = list(text = dataNavigatorTitle(), font = list(size = 24)),
-      xaxis = list(
-        showline = TRUE,
-        linewidth = 1,
-        linecolor = 'black',
-        mirror = FALSE,
-        title = "Date",
-        tickfont = list(size = 12),
-        dtick = paste0("M", input$xLabelFreq * 12),
-        rangeslider = list(
-          visible = TRUE,
-          thickness = 0.1,
-          bgcolor = "#F3F3F3",
-          yaxis = list(
-            rangemode = "auto",
-            fixedrange = FALSE
-          )
+      p %>% layout(
+    shapes = recession_shapes,
+    title = list(text = dataNavigatorTitle(), font = list(size = 20)),
+    xaxis = list(
+      showline = TRUE,
+      linewidth = 1,
+      linecolor = 'black',
+      mirror = FALSE,
+      title = "Date",
+      tickfont = list(size = 12),
+      dtick = paste0("M", input$xLabelFreq * 12),
+      rangeslider = list(
+        visible = TRUE,
+        thickness = 0.1,
+        bgcolor = "#F3F3F3",
+        yaxis = list(
+          rangemode = "auto",
+          fixedrange = FALSE
         )
-      ),
-      yaxis = list(
-        showline = TRUE,
-        linewidth = 1,
-        linecolor = 'black',
-        mirror = FALSE,
-        title = y_axis_title,  # Using the dynamic units-based title
-        tickfont = list(size = 12),
-        fixedrange = FALSE,
-        autorange = TRUE,
-        rangemode = "auto"
-      ),
-      showlegend = TRUE,
-      legend = list(
-        orientation = "h",
-        yanchor = "top",
-        y = -0.4,
-        xanchor = "center",
-        x = 0.5,
-        bgcolor = "rgba(255, 255, 255, 0.9)",
-        bordercolor = "rgba(0, 0, 0, 0.2)",
-        borderwidth = 1,
-        itemsizing = "constant"
-      ),
-      margin = list(
-        t = 50,
-        r = 50,
-        b = 120,
-        l = 50
-      ),
-      hoverlabel = list(
-        align = "left",
-        bgcolor = "rgb(237, 234, 218)",  # Fully opaque
-        bordercolor = "rgb(0, 0, 0)",  # Fully opaque darkgray
-        font = list(size = 12)
-      ),
-      hovermode = "closest", # Changed from "x unified" to "closest"
-      plot_bgcolor = "rgba(255, 255, 255, 0.9)",
-      paper_bgcolor = "rgba(255, 255, 255, 0.9)"
-    )
-  })
+      )
+    ),
+    yaxis = list(
+      showline = TRUE,
+      linewidth = 1,
+      linecolor = 'black',
+      mirror = FALSE,
+      title = y_axis_title,
+      tickfont = list(size = 12),
+      fixedrange = FALSE,
+      autorange = TRUE,
+      rangemode = "auto"
+    ),
+    # Add the logo image
+    images = if (!is.null(logo_base64())) list(
+      list(
+        source = logo_base64(),
+        xref = "paper",
+        yref = "paper",
+        x = 0.99,      # Position at 99% of the width (right side)
+        y = 0.05,      # Position at 5% from the bottom (just above x-axis)
+        sizex = 0.15,  # Width of the image (15% of plot width)
+        sizey = 0.15,  # Height of the image proportional to width
+        xanchor = "right",  # Anchor to right side
+        yanchor = "bottom", # Anchor to bottom
+        opacity = 0.8       # Slightly transparent
+      )
+    ) else NULL,
+    showlegend = TRUE,
+    legend = list(
+      orientation = "h",
+      yanchor = "top",
+      y = -0.4,
+      xanchor = "center",
+      x = 0.5,
+      bgcolor = "rgba(255, 255, 255, 0.9)",
+      bordercolor = "rgba(0, 0, 0, 0.2)",
+      borderwidth = 1,
+      itemsizing = "constant"
+    ),
+    margin = list(
+      t = 50,
+      r = 50,
+      b = 120,
+      l = 50
+    ),
+    hoverlabel = list(
+      align = "left",
+      bgcolor = "rgb(237, 234, 218)",
+      bordercolor = "rgb(0, 0, 0)",
+      font = list(size = 12)
+    ),
+    hovermode = "closest",
+    plot_bgcolor = "rgba(255, 255, 255, 0.9)",
+    paper_bgcolor = "rgba(255, 255, 255, 0.9)"
+  )
+})
   
   
   # Reactive expression for the chart title
