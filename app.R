@@ -3369,78 +3369,93 @@ dataNavigatorTitle <- reactive({
 
     
     # Add final layout configuration
-    p %>% layout(
-      shapes = recession_shapes,  # Add recession shading if enabled
-      title = list(text = chartTitle(), font = list(size = 24)),
-      xaxis = list(
-        showline = TRUE,
-        linewidth = 1,
-        linecolor = 'black',
-        mirror = FALSE,
-        title = "Date",
-        tickfont = list(size = 12),
-        dtick = paste0("M", input$storedXLabelFreq * 12),
-        rangeslider = list(
-          visible = TRUE,
-          thickness = 0.1,
-          bgcolor = "#F3F3F3",
-          yaxis = list(
-            rangemode = "auto",
-            fixedrange = FALSE
-          )
+      p %>% layout(
+    shapes = recession_shapes,
+    title = list(text = chartTitle(), font = list(size = 24)),
+    xaxis = list(
+      showline = TRUE,
+      linewidth = 1,
+      linecolor = 'black',
+      mirror = FALSE,
+      title = "Date",
+      tickfont = list(size = 12),
+      dtick = paste0("M", input$storedXLabelFreq * 12),
+      rangeslider = list(
+        visible = TRUE,
+        thickness = 0.1,
+        bgcolor = "#F3F3F3",
+        yaxis = list(
+          rangemode = "auto",
+          fixedrange = FALSE
         )
-      ),
-      yaxis = list(
-        showline = TRUE,
-        linewidth = 1,
-        linecolor = 'black',
-        mirror = FALSE,
-        title = left_axis_title,  # Dynamic left axis title based on units
-        tickfont = list(size = 12),
-        autorange = is.null(left_range),
-        range = left_range,
-        fixedrange = FALSE,
-        rangemode = if(is.null(left_range)) "auto" else "normal"
-      ),
-      yaxis2 = list(
-        showline = TRUE,
-        linewidth = 1,
-        linecolor = 'black',
-        mirror = FALSE,
-        title = right_axis_title,  # Dynamic right axis title based on units
-        tickfont = list(size = 12),
-        autorange = is.null(right_range),
-        range = right_range,
-        fixedrange = FALSE,
-        rangemode = if(is.null(right_range)) "auto" else "normal"
-      ),
-      showlegend = TRUE,
-      legend = list(
-        orientation = "h",
-        yanchor = "top",
-        y = -0.45,
-        xanchor = "center",
-        x = 0.5,
-        bgcolor = "rgba(255, 255, 255, 0.9)",
-        bordercolor = "rgba(0, 0, 0, 0.2)",
-        borderwidth = 1,
-        itemsizing = "constant"
-      ),
-      margin = list(
-        t = 50,
-        r = 50,
-        b = 120,
-        l = 50
-      ),
-      hoverlabel = list(
-        align = "left",
-        bgcolor = "rgb(237, 234, 218)",  # Fully opaque background
-        bordercolor = "rgb(0, 0, 0)",    # Black border
-        font = list(family = "Arial", color = "rgb(0, 0, 0)", size = 12),  # Black text
-        namelength = -1
       )
+    ),
+    yaxis = list(
+      showline = TRUE,
+      linewidth = 1,
+      linecolor = 'black',
+      mirror = FALSE,
+      title = left_axis_title,
+      tickfont = list(size = 12),
+      autorange = is.null(left_range),
+      range = left_range,
+      fixedrange = FALSE,
+      rangemode = if(is.null(left_range)) "auto" else "normal"
+    ),
+    yaxis2 = list(
+      showline = TRUE,
+      linewidth = 1,
+      linecolor = 'black',
+      mirror = FALSE,
+      title = right_axis_title,
+      tickfont = list(size = 12),
+      autorange = is.null(right_range),
+      range = right_range,
+      fixedrange = FALSE,
+      rangemode = if(is.null(right_range)) "auto" else "normal"
+    ),
+    # Add the logo image
+    images = if (!is.null(logo_base64())) list(
+      list(
+        source = logo_base64(),
+        xref = "paper",
+        yref = "paper",
+        x = 0.99,      # Position at 99% of the width (right side)
+        y = 0.02,      # Position at 2% from the bottom (very close to x-axis)
+        sizex = 0.15,  # Width of the image (15% of plot width)
+        sizey = 0.15,  # Height of the image proportional to width
+        xanchor = "right",  # Anchor to right side
+        yanchor = "bottom", # Anchor to bottom
+        opacity = 0.8       # Slightly transparent
+      )
+    ) else NULL,
+    showlegend = TRUE,
+    legend = list(
+      orientation = "h",
+      yanchor = "top",
+      y = -0.45,
+      xanchor = "center",
+      x = 0.5,
+      bgcolor = "rgba(255, 255, 255, 0.9)",
+      bordercolor = "rgba(0, 0, 0, 0.2)",
+      borderwidth = 1,
+      itemsizing = "constant"
+    ),
+    margin = list(
+      t = 50,
+      r = 50,
+      b = 120,
+      l = 50
+    ),
+    hoverlabel = list(
+      align = "left",
+      bgcolor = "rgb(237, 234, 218)",
+      bordercolor = "rgb(0, 0, 0)",
+      font = list(family = "Arial", color = "rgb(0, 0, 0)", size = 12),
+      namelength = -1
     )
-  })
+  )
+})
   
   #  Add currently visualized data to stored data
   # Replace your existing addToStoredData observer with this:
