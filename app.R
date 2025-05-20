@@ -1184,6 +1184,10 @@ dataNavigatorTitle <- reactive({
   })
   
   output$dataInformationBox <- renderUI({
+
+      validate(
+    need(try(nrow(filteredData()) > 0), "")
+  )
   # Get current selections
   current_dataset <- getCurrentDataset()
   current_indicator <- getCurrentIndicator()
