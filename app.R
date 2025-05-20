@@ -2752,6 +2752,10 @@ dataNavigatorTitle <- reactive({
   
   # Render line chart for filtered data
   output$lineChart <- renderPlotly({
+
+      validate(
+    need(try(nrow(filteredData()) > 0), "")
+  )
     # Initialize the plot with hover formatting
     p <- plot_ly(filteredData(), x = ~Date) %>%
       layout(
