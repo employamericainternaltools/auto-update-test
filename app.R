@@ -3429,7 +3429,7 @@ dataNavigatorTitle <- reactive({
     panelCollapsed(TRUE)
   })
   
-# Update just the downloadCurrentData handler
+# Update downloadCurrentData handler
 output$downloadCurrentData <- downloadHandler(
   filename = function() {
     timestamp <- format(Sys.time(), "%Y-%m-%d_%H%M%S")
@@ -3438,9 +3438,6 @@ output$downloadCurrentData <- downloadHandler(
   content = function(file) {
     # Safely capture the filtered data 
     current_data <- filteredData()
-    
-    # Get the current chart code from the globalParameterID
-    chart_code <- isolate(output$globalParameterID())
     
     # Create export version with formatted columns
     data_to_export <- current_data %>%
@@ -3466,9 +3463,8 @@ output$downloadCurrentData <- downloadHandler(
     # Create a file connection to write to
     con <- file(file, "w")
     
-    # Write header rows
+    # Write header row
     writeLines("Data downloaded from the Industry Data Navigator", con)
-    writeLines(paste0("Chart Code: ", chart_code), con)
     
     # Write the wide-format data to the CSV file
     write.csv(wide_data, con, row.names = FALSE)
