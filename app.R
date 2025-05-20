@@ -1046,12 +1046,50 @@ ui <- fluidPage(
 # Define server logic
 server <- function(input, output, session) {
 
-  # Add this reactive value at the top of your server function
-currentChartCode <- reactiveVal("")
-
-# Add an observer to update the currentChartCode whenever globalParameterID changes
-observe({
-  currentChartCode(output$globalParameterID$value)
+# Add this at the beginning of your server function
+computeGlobalParameterID <- reactive({
+  # Get the dataset ID
+  dataset_id <- as.character(datasetIDs()[[input$datasetNav]])
+  
+  # Get the indicator ID
+  selected_dataset <- input$datasetNav
+  selected_indicator <- getCurrentIndicator()
+  dataset_id_num <- datasetIDs()[[selected_dataset]]
+  indicator_ids_list <- indicatorIDsByDataset()[[as.character(dataset_id_num)]]
+  indicator_id <- as.character(indicator_ids_list[[selected_indicator]])
+  
+  # Get values from all individual parameters
+  ma_id <- as.character(movingAverageIDs()[[input$movingAverageTransform]])
+  change_id <- as.character(changeIDs()[[input$changeTransform]])
+  percent_change_id <- as.character(percentChangeIDs()[[input$percentChangeTransform]])
+  cagr_id <- as.character(cagrIDs()[[input$cagrTransform]])
+  show_sub_industries <- as.character(as.integer(input$showSubIndustries))
+  seasonal_adjustment <- as.character(as.integer(input$useSeasonalAdjustment))
+  index_to_date <- as.character(as.integer(input$useIndexDate))
+  
+  # Format date as YYYYMM
+  index_date <- format(input$indexDate, "%Y%m")
+  
+  # Get NAICS code
+  naics_code <- extractNaicsDigits(input$naicsIndex)
+  if (is.na(naics_code)) naics_code <- "000000"
+  
+  # Concatenate all values into a single string
+  global_id <- paste0(
+    dataset_id,
+    indicator_id,
+    ma_id,
+    change_id,
+    percent_change_id,
+    cagr_id,
+    show_sub_industries,
+    seasonal_adjustment,
+    index_to_date,
+    index_date,
+    naics_code
+  )
+  
+  return(global_id)
 })
 
   # Replace the simple dataNavigatorTitle reactive with this more comprehensive one
@@ -3437,18 +3475,18 @@ dataNavigatorTitle <- reactive({
     panelCollapsed(TRUE)
   })
   
-# Update downloadCurrentData handler
+# Now update the downloadCurrentData handler to include the chart code
 output$downloadCurrentData <- downloadHandler(
   filename = function() {
     timestamp <- format(Sys.time(), "%Y-%m-%d_%H%M%S")
     return(paste0("data_viewer_data_", timestamp, ".csv"))
   },
   content = function(file) {
-    # Get the current chart code
-    chart_code <- currentChartCode()
-    
     # Safely capture the filtered data 
     current_data <- filteredData()
+    
+    # Get the chart code using our reactive function
+    chart_code <- computeGlobalParameterID()
     
     # Create export version with formatted columns
     data_to_export <- current_data %>%
