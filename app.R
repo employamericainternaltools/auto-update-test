@@ -780,8 +780,8 @@ ui <- fluidPage(
                div(class = "sidebar-row",
                    div(class = "sidebar-col-12",
                        pickerInput("naicsConstraint", "Filter by Sector",
-                                   choices = c("No Constraint", unique(data$index_col[grepl("^\\d{3}\\b", data$NAICS_Code)])),
-                                   options = list(`live-search` = TRUE))
+           choices = c("No Constraint"),  # Just initialize with No Constraint
+           options = list(`live-search` = TRUE))
                    )
                ),
                
@@ -1045,6 +1045,42 @@ ui <- fluidPage(
 
 # Define server logic
 server <- function(input, output, session) {
+
+  # Add this reactive expression to server function
+availableSectors <- reactive({
+  # Get the current indicator
+  currentIndicator <- getCurrentIndicator()
+  
+  # Filter data for this indicator
+  indicator_data <- data %>%
+    filter(Indicator == currentIndicator)
+  
+  # Extract unique 3-digit sector codes and their display values
+  sector_codes <- unique(indicator_data$NAICS_Code)
+  sector_displays <- unique(indicator_data$index_col[grepl("^\\d{3}\\b", indicator_data$NAICS_Code)])
+  
+  # Return the list of available sectors
+  c("No Constraint", sort(sector_displays))
+})
+
+# Add this observer to update the constraint picker when indicator changes
+observeEvent(getCurrentIndicator(), {
+  # Get available sectors for the current indicator
+  available_sectors <- availableSectors()
+  
+  # Check if current selection is still valid
+  current_selection <- input$naicsConstraint
+  selected_value <- if(current_selection %in% available_sectors) {
+    current_selection
+  } else {
+    "No Constraint"  # Default to no constraint if current selection not available
+  }
+  
+  # Update the picker input
+  updatePickerInput(session, "naicsConstraint",
+                    choices = available_sectors,
+                    selected = selected_value)
+})
 
   # This loads the logo once when the app starts to improve performance
 logo_base64 <- reactive({
