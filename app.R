@@ -1046,6 +1046,14 @@ ui <- fluidPage(
 # Define server logic
 server <- function(input, output, session) {
 
+  # Add this reactive value at the top of your server function
+currentChartCode <- reactiveVal("")
+
+# Add an observer to update the currentChartCode whenever globalParameterID changes
+observe({
+  currentChartCode(output$globalParameterID$value)
+})
+
   # Replace the simple dataNavigatorTitle reactive with this more comprehensive one
 dataNavigatorTitle <- reactive({
   # Get the currently selected industry
@@ -3436,6 +3444,9 @@ output$downloadCurrentData <- downloadHandler(
     return(paste0("data_viewer_data_", timestamp, ".csv"))
   },
   content = function(file) {
+    # Get the current chart code
+    chart_code <- currentChartCode()
+    
     # Safely capture the filtered data 
     current_data <- filteredData()
     
@@ -3463,8 +3474,8 @@ output$downloadCurrentData <- downloadHandler(
     # Create a file connection to write to
     con <- file(file, "w")
     
-    # Write header row
-    writeLines("Data downloaded from the Industry Data Navigator", con)
+    # Write header row with chart code
+    writeLines(paste0("Data downloaded from the Industry Data Navigator. Chart Code: ", chart_code), con)
     
     # Write the wide-format data to the CSV file
     write.csv(wide_data, con, row.names = FALSE)
