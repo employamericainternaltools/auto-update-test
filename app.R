@@ -1288,16 +1288,16 @@ dataNavigatorTitle <- reactive({
   }
 
   # Look up descriptions
-  dataset_desc <- dataset_descriptions() %>%
-    filter(Name == current_dataset) %>%
-    pull(Description)
+#  dataset_desc <- dataset_descriptions() %>%
+#    filter(Name == current_dataset) %>%
+#    pull(Description)
 
   indicator_desc <- indicator_descriptions() %>%
     filter(Name == current_indicator) %>%
     pull(Description)
 
   citation <- citation_info() %>%
-    filter(Name == current_dataset) %>%
+    filter(Name == current_indicator) %>%
     pull(Description)
 
   # Get the existing NAICS description
