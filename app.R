@@ -1336,11 +1336,11 @@ output$dataInformationBox <- renderUI({
   citation <- tryCatch({
     df <- read.csv("citations.csv", stringsAsFactors = FALSE)
     # Use X...Name instead of Name
-    matches <- df[df$X...Name == current_dataset, ]
+    matches <- df[df$X...Name == current_indicator, ]
     if (nrow(matches) > 0) {
       matches$Description[1]
     } else {
-      paste("No citation found for:", current_dataset)
+      paste("No citation found for:", current_indicator)
     }
   }, error = function(e) {
     "Error loading citation."
