@@ -10,7 +10,11 @@ library(colourpicker)
 library(seasonal)
 library(lubridate)
 library(plotly)
+
 load("data_index.RData")
+dataset_descriptions_data <- read.csv("dataset.csv", stringsAsFactors = FALSE)
+indicator_descriptions_data <- read.csv("indicators.csv", stringsAsFactors = FALSE)
+citation_info_data <- read.csv("citations.csv", stringsAsFactors = FALSE)
 
 # Get current month and year
 current_month <- as.integer(format(Sys.Date(), "%m"))
@@ -1292,17 +1296,17 @@ dataNavigatorTitle <- reactive({
   }
   
   # Look up descriptions
-  dataset_desc <- dataset_descriptions() %>%
-    filter(Name == current_dataset) %>%
-    pull(Description)
-  
-  indicator_desc <- indicator_descriptions() %>%
-    filter(Name == current_indicator) %>%
-    pull(Description)
-  
-  citation <- citation_info() %>%
-    filter(Name == current_dataset) %>%
-    pull(Description)
+  dataset_desc <- dataset_descriptions_data %>%
+      filter(Name == current_dataset) %>%
+      pull(Description)
+    
+    indicator_desc <- indicator_descriptions_data %>%
+      filter(Name == current_indicator) %>%
+      pull(Description)
+    
+    citation <- citation_info_data %>%
+      filter(Name == current_dataset) %>%
+      pull(Description)
   
   # Get the existing NAICS description
   naics_code <- gsub("^(\\d+).*", "\\1", current_naics)
