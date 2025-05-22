@@ -1223,138 +1223,204 @@ dataNavigatorTitle <- reactive({
     read.csv("citations.csv", stringsAsFactors = FALSE)
   })
   
-  output$dataInformationBox <- renderUI({
+  # COMPREHENSIVE DEBUG SOLUTION
+# Replace your entire dataInformationBox output with this debug version:
 
-      validate(
-    need(try(nrow(filteredData()) > 0), "")
+output$dataInformationBox <- renderUI({
+  
+  # Step 1: Basic validation
+  validate(
+    need(try(nrow(filteredData()) > 0), "No data available")
   )
-  # Get current selections
-  current_dataset <- getCurrentDataset()
-  current_indicator <- getCurrentIndicator()
-  current_naics <- input$naicsIndex
   
-  # Get the most recent data for the selected series
-  recent_data <- filteredData() %>%
-    filter(index_col == current_naics) %>%
-    arrange(desc(Date)) %>%
-    head(13)  # Get top 13 rows to ensure we have current, prior, and year-ago data
+  # Step 2: Debug CSV file loading
+  cat("=== CSV DEBUG START ===\n")
   
-  # Function to format values based on units
-  format_value <- function(value, units) {
-    if (is.na(value) || value == "N/A") return("N/A")
-    
-    # Format based on units
-    if (grepl("Percent", units, ignore.case = TRUE)) {
-      return(paste0(format(round(value * 100, 1), nsmall = 1), "%"))
-    } else if (grepl("Dollar", units, ignore.case = TRUE)) {
-      return(paste0("$", format(round(value, 2), big.mark = ",", nsmall = 2)))
-    } else if (grepl("Index", units, ignore.case = TRUE)) {
-      # Extract index date if present (format: "Index, MM-YYYY = 100")
-      index_date <- gsub(".*Index, ([0-9]{2}-[0-9]{4}) = 100.*", "\\1", units)
-      if (index_date != units) {  # If we successfully extracted a date
-        return(paste0(format(round(value, 1), nsmall = 1), " (", index_date, " = 100)"))
-      } else {
-        return(format(round(value, 1), nsmall = 1))
-      }
+  # Check if files exist
+  cat("Checking file existence:\n")
+  cat("dataset.csv exists:", file.exists("dataset.csv"), "\n")
+  cat("indicators.csv exists:", file.exists("indicators.csv"), "\n")
+  cat("citations.csv exists:", file.exists("citations.csv"), "\n")
+  
+  # Try to load each file individually with detailed error reporting
+  dataset_df <- tryCatch({
+    df <- read.csv("dataset.csv", stringsAsFactors = FALSE)
+    cat("Dataset CSV loaded successfully!\n")
+    cat("Columns:", paste(colnames(df), collapse = ", "), "\n")
+    cat("Rows:", nrow(df), "\n")
+    cat("First few entries in column 1:", paste(head(df[,1], 3), collapse = ", "), "\n")
+    df
+  }, error = function(e) {
+    cat("ERROR loading dataset.csv:", e$message, "\n")
+    data.frame()
+  })
+  
+  indicator_df <- tryCatch({
+    df <- read.csv("indicators.csv", stringsAsFactors = FALSE)
+    cat("Indicator CSV loaded successfully!\n")
+    cat("Columns:", paste(colnames(df), collapse = ", "), "\n")
+    cat("Rows:", nrow(df), "\n")
+    df
+  }, error = function(e) {
+    cat("ERROR loading indicators.csv:", e$message, "\n")
+    data.frame()
+  })
+  
+  citation_df <- tryCatch({
+    df <- read.csv("citations.csv", stringsAsFactors = FALSE)
+    cat("Citation CSV loaded successfully!\n")
+    cat("Columns:", paste(colnames(df), collapse = ", "), "\n")
+    cat("Rows:", nrow(df), "\n")
+    df
+  }, error = function(e) {
+    cat("ERROR loading citations.csv:", e$message, "\n")
+    data.frame()
+  })
+  
+  # Step 3: Get current selections with detailed debugging
+  current_dataset <- tryCatch(getCurrentDataset(), error = function(e) {
+    cat("ERROR getting current dataset:", e$message, "\n")
+    "UNKNOWN"
+  })
+  
+  current_indicator <- tryCatch(getCurrentIndicator(), error = function(e) {
+    cat("ERROR getting current indicator:", e$message, "\n")
+    "UNKNOWN"
+  })
+  
+  current_naics <- tryCatch(input$naicsIndex, error = function(e) {
+    cat("ERROR getting current NAICS:", e$message, "\n")
+    "UNKNOWN"
+  })
+  
+  cat("Current selections:\n")
+  cat("Dataset:", current_dataset, "\n")
+  cat("Indicator:", current_indicator, "\n")
+  cat("NAICS:", current_naics, "\n")
+  
+  # Step 4: Try the problematic filter operations with detailed debugging
+  dataset_desc <- tryCatch({
+    if (nrow(dataset_df) == 0) {
+      "No dataset file loaded"
+    } else if (!"Name" %in% colnames(dataset_df)) {
+      paste("'Name' column not found. Available columns:", paste(colnames(dataset_df), collapse = ", "))
     } else {
-      # For other units, just round to 2 decimal places
-      return(format(round(value, 2), big.mark = ",", nsmall = 2))
+      cat("Attempting to filter dataset for:", current_dataset, "\n")
+      cat("Available names in dataset:", paste(head(dataset_df$Name), collapse = ", "), "\n")
+      
+      # Try exact match first
+      matches <- dataset_df[dataset_df$Name == current_dataset, ]
+      cat("Exact matches found:", nrow(matches), "\n")
+      
+      if (nrow(matches) > 0) {
+        matches$Description[1]
+      } else {
+        # Try partial matches
+        partial_matches <- dataset_df[grepl(current_dataset, dataset_df$Name, ignore.case = TRUE), ]
+        cat("Partial matches found:", nrow(partial_matches), "\n")
+        if (nrow(partial_matches) > 0) {
+          paste("Partial match found:", partial_matches$Description[1])
+        } else {
+          paste("NO MATCH FOUND for dataset:", current_dataset)
+        }
+      }
     }
-  }
+  }, error = function(e) {
+    cat("ERROR in dataset description lookup:", e$message, "\n")
+    paste("Error:", e$message)
+  })
   
-  # Extract values for the three time periods
+  indicator_desc <- tryCatch({
+    if (nrow(indicator_df) == 0) {
+      "No indicator file loaded"
+    } else if (!"Name" %in% colnames(indicator_df)) {
+      paste("'Name' column not found. Available columns:", paste(colnames(indicator_df), collapse = ", "))
+    } else {
+      cat("Attempting to filter indicator for:", current_indicator, "\n")
+      matches <- indicator_df[indicator_df$Name == current_indicator, ]
+      cat("Matches found:", nrow(matches), "\n")
+      
+      if (nrow(matches) > 0) {
+        matches$Description[1]
+      } else {
+        paste("NO MATCH FOUND for indicator:", current_indicator)
+      }
+    }
+  }, error = function(e) {
+    cat("ERROR in indicator description lookup:", e$message, "\n")
+    paste("Error:", e$message)
+  })
+  
+  citation <- tryCatch({
+    if (nrow(citation_df) == 0) {
+      "No citation file loaded"
+    } else if (!"Name" %in% colnames(citation_df)) {
+      paste("'Name' column not found. Available columns:", paste(colnames(citation_df), collapse = ", "))
+    } else {
+      matches <- citation_df[citation_df$Name == current_dataset, ]
+      if (nrow(matches) > 0) {
+        matches$Description[1]
+      } else {
+        paste("NO MATCH FOUND for citation:", current_dataset)
+      }
+    }
+  }, error = function(e) {
+    cat("ERROR in citation lookup:", e$message, "\n")
+    paste("Error:", e$message)
+  })
+  
+  cat("=== CSV DEBUG END ===\n")
+  
+  # Step 5: Get recent data (simplified for debugging)
+  recent_data <- tryCatch({
+    filteredData() %>%
+      filter(index_col == current_naics) %>%
+      arrange(desc(Date)) %>%
+      head(3)  # Just get 3 rows for debugging
+  }, error = function(e) {
+    cat("ERROR getting recent data:", e$message, "\n")
+    data.frame()
+  })
+  
+  # Simple value extraction
   if (nrow(recent_data) >= 1) {
     most_recent_date <- format(recent_data$Date[1], "%b %Y")
-    most_recent_value <- format_value(recent_data$Value[1], recent_data$Units[1])
+    most_recent_value <- paste("Value:", recent_data$Value[1])
   } else {
     most_recent_date <- "N/A"
     most_recent_value <- "N/A"
   }
   
-  if (nrow(recent_data) >= 2) {
-    prior_month_date <- format(recent_data$Date[2], "%b %Y")
-    prior_month_value <- format_value(recent_data$Value[2], recent_data$Units[2])
-  } else {
-    prior_month_date <- "N/A"
-    prior_month_value <- "N/A"
-  }
-  
-  # Find the data from approximately one year ago (12 months back, or the closest we have)
-  year_ago_index <- which(abs(as.numeric(difftime(recent_data$Date, recent_data$Date[1], units = "days"))) 
-                          >= 360 & abs(as.numeric(difftime(recent_data$Date, recent_data$Date[1], units = "days"))) 
-                          <= 370)
-  
-  if (length(year_ago_index) > 0) {
-    year_ago_date <- format(recent_data$Date[year_ago_index[1]], "%b %Y")
-    year_ago_value <- format_value(recent_data$Value[year_ago_index[1]], recent_data$Units[year_ago_index[1]])
-  } else if (nrow(recent_data) >= 12) {
-    year_ago_date <- format(recent_data$Date[12], "%b %Y")
-    year_ago_value <- format_value(recent_data$Value[12], recent_data$Units[12])
-  } else {
-    year_ago_date <- "N/A"
-    year_ago_value <- "N/A"
-  }
-  
-  # Look up descriptions
-  dataset_desc <- dataset_descriptions_data %>%
-      filter(Name == current_dataset) %>%
-      pull(Description)
-    
-    indicator_desc <- indicator_descriptions_data %>%
-      filter(Name == current_indicator) %>%
-      pull(Description)
-    
-    citation <- citation_info_data %>%
-      filter(Name == current_dataset) %>%
-      pull(Description)
-  
-  # Get the existing NAICS description
-  naics_code <- gsub("^(\\d+).*", "\\1", current_naics)
-  naics_desc <- naics_descriptions() %>%
-    filter(`NAICS.Code` == naics_code) %>%
-    pull(Description)
-  
-  # Handle cases where descriptions are not found
-  if(length(dataset_desc) == 0) dataset_desc <- "No description available."
-  if(length(indicator_desc) == 0) indicator_desc <- "No description available."
-  if(length(citation) == 0) citation <- "No citation information available."
-  if(length(naics_desc) == 0) naics_desc <- "No description available for this NAICS code."
-  
-  # Create HTML output with reorganized sections
+  # Step 6: Create simplified output showing debug info
   tagList(
-    # Section 1: Recent Readings
-    tags$p(
-      tags$strong("Recent Readings:")
-    ),
-    tags$p(
-      tags$strong(most_recent_date, ": "), most_recent_value, ", ",
-      tags$strong(prior_month_date, ": "), prior_month_value, ", ",
-      tags$strong(year_ago_date, ": "), year_ago_value
+    tags$h4("DEBUG INFORMATION"),
+    tags$p(tags$strong("Files loaded successfully: "), 
+           paste("Dataset:", nrow(dataset_df) > 0, 
+                 "| Indicator:", nrow(indicator_df) > 0, 
+                 "| Citation:", nrow(citation_df) > 0)),
+    
+    tags$p(tags$strong("Current Selections: ")),
+    tags$ul(
+      tags$li("Dataset: ", current_dataset),
+      tags$li("Indicator: ", current_indicator),
+      tags$li("NAICS: ", current_naics)
     ),
     
-    # Section 2: Move Suggested Citation here
-    tags$p(
-      tags$strong("Suggested Citation:")
-    ),
-    tags$p(citation),
+    tags$p(tags$strong("Most Recent Reading: "), most_recent_date, " - ", most_recent_value),
     
-    # Section 3: Dataset
-    tags$p(
-      tags$strong("Dataset: "), current_dataset
-    ),
+    tags$hr(),
+    
+    tags$p(tags$strong("Dataset Description: ")), 
     tags$p(dataset_desc),
     
-    # Section 4: Indicator
-    tags$p(
-      tags$strong("Indicator: "), current_indicator
-    ),
+    tags$p(tags$strong("Indicator Description: ")), 
     tags$p(indicator_desc),
     
-    # Section 5: Industry
-    tags$p(
-      tags$strong("Industry: "), current_naics
-    ),
-    tags$p(paste0("NAICS ", naics_code, ": ", naics_desc))
+    tags$p(tags$strong("Citation: ")), 
+    tags$p(citation),
+    
+    tags$hr(),
+    tags$p(tags$em("Check the R Console for detailed debug output!"))
   )
 })
   
