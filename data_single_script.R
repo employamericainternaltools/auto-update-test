@@ -160,6 +160,9 @@ naics_lookup <- setNames(naics_dict$name, naics_dict$code)
     
     bls_data <- bls_data %>%
       mutate(
+        # Coerce Value to numeric (BLS bulk files sometimes contain non-numeric
+        # placeholders like "-" or "(n)" during revision periods)
+        Value = as.numeric(Value),
         # Check if Units is "Thousands of Employees"
         Value = ifelse(Units == "Thousands of Employees", Value * 1000, Value),
         # Update Units label for those records
@@ -903,6 +906,8 @@ naics_lookup <- setNames(naics_dict$name, naics_dict$code)
   # Convert "thousands of dollars" to "dollars" by multiplying by 1000
   combined_df <- combined_df %>%
     mutate(
+      # Coerce Value to numeric (Census M3 data may contain non-numeric placeholders)
+      Value = as.numeric(Value),
       Value = ifelse(Units == "Thousands of Dollars", Value * 1000, Value),
       Units = ifelse(Units == "Thousands of Dollars", "Dollars", Units)
     )
